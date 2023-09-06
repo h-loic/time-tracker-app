@@ -45,7 +45,7 @@ export default function Chantiers() {
         <div className=''>
             { chantiers.map((chantier) => (
               <Link href={`/chantiers/${chantier.id}`} key={chantier.id}>
-                <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ chantier.name } ef</div>
+                <div className="text-center text-slate-50 bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ chantier.name }</div>
               </Link>
             ))}
         </div>
