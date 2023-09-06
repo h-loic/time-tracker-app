@@ -1,6 +1,6 @@
 'use client';
 import { collection } from "firebase/firestore";
-import { doc,getDoc, getDocs } from "firebase/firestore";
+import { doc,getDoc, getDocs, setDoc } from "firebase/firestore";
 import {db} from '../../firebase'
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
@@ -22,6 +22,25 @@ export default function Details({params : {id}}) {
         fetchData();
       }
     }, [id]);
+
+    const changeFinishedStatus = async () => {
+      await setDoc(doc(db, 'chantiers', id), {
+          name : chantier.name,
+          budget : chantier.budget,
+          totalHours : chantier.totalHours,
+          availableHours : chantier.availableHours,
+          usedHours : chantier.usedHours,
+          isFinished : !chantier.isFinished
+      })
+      setChantier({
+        name : chantier.name,
+        budget : chantier.budget,
+        totalHours : chantier.totalHours,
+        availableHours : chantier.availableHours,
+        usedHours : chantier.usedHours,
+        isFinished : !chantier.isFinished
+      })
+    };
   
     return (
       <>
@@ -30,7 +49,14 @@ export default function Details({params : {id}}) {
         :
         <div>
           <h1 className='text-4xl mb-4 p-4 text-center'>{ chantier.name}</h1>
-          <Link href={`/chantiers/edit/${id}` } type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">modifier le chantier</Link>
+          <div className='grid grid-cols-2 gap-4 mb-5 mt-5'>
+            <Link href={`/chantiers/edit/${id}` } type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">modifier le chantier</Link>
+              <button type="button" onClick={() => changeFinishedStatus()} 
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                {chantier.isFinished ? "rouvrir le chantier" : "terminer le chantier"}
+                </button>
+          </div>
+          
           <h2 className='text-2xl p-4'>Budget : {chantier.budget}</h2>
           <h2 className='text-2xl p-4'>Nombre heures total : {chantier.totalHours}</h2>
           <h2 className='text-2xl p-4'>Nombre heures restante : {chantier.availableHours}</h2>
