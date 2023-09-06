@@ -26,7 +26,6 @@ export default function Chantiers() {
         itemsArr.push({ ...doc.data(), id: doc.id });
       });
       setChantiers(itemsArr);
-
       return () => unsubscribe();
     });
   }, []);
@@ -45,9 +44,11 @@ export default function Chantiers() {
 
         <div className=''>
             { chantiers.map((chantier) => (
-              <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ chantier.name } ef</div>
+              <Link href={`/chantiers/${chantier.id}`} key={chantier.id}>
+                <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ chantier.name } ef</div>
+              </Link>
             ))}
         </div>
-        </>
+      </>
   )
 }
