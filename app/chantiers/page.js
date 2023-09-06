@@ -1,8 +1,36 @@
+'use client';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image'
 import Link from 'next/link'
-import { collection, addDoc } from 'firebase/firestore'
+import {
+  collection,
+  addDoc,
+  getDoc,
+  query,
+  onSnapshot,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore';
+import {db} from '../firebase'
 
-export default function Home() {
+export default function Chantiers() {
+
+  const [chantiers, setChantiers] = useState([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'chantiers'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      let itemsArr = [];
+
+      querySnapshot.forEach((doc) => {
+        itemsArr.push({ ...doc.data(), id: doc.id });
+      });
+      setChantiers(itemsArr);
+
+      return () => unsubscribe();
+    });
+  }, []);
+
   return (
     <>
         <h1 className='text-4xl p-4 text-center'>Baustellen</h1>
@@ -16,15 +44,9 @@ export default function Home() {
         </div>
 
         <div className=''>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">01</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">02</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">03</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">01</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">02</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">03</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">01</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">02</div>
-            <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">03</div>
+            { chantiers.map((chantier) => (
+              <div className="bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ chantier.name } ef</div>
+            ))}
         </div>
         </>
   )

@@ -25,7 +25,8 @@ export default function addChantier() {
             totalHours : availableHours,
             availableHours : availableHours,
             usedHours : 0,
-            workerContribution : {}
+            workerContribution : {},
+            isFinished : false
         })
         router.push('/')
       };
