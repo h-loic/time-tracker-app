@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { auth, db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { signIn } from 'next-auth/react';
 
 export default function Signup() {
 
@@ -24,6 +25,7 @@ export default function Signup() {
                 totalHours : 0,
                 mail : email
               });
+              signIn('credentials', {email, password, redirect: true, callbackUrl: '/'})
             }catch (e){
               console.error("Error :", e);
       }
