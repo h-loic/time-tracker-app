@@ -60,8 +60,6 @@ export default function logHours(){
       }, [session]);
 
     const handleFormSubmit = async () => {
-        console.log(worker)
-
         const docRef1 = doc(db, `workers/${worker.id}/chantiers/${formData.chantierId}`)
         const document = await getDoc(docRef1);
         if (document.exists()){
@@ -73,7 +71,13 @@ export default function logHours(){
         updateDoc(docRef2, {
             totalHours : increment(formData.numberOfHours)
         })
-        //router.back();
+
+        const docRef3 = doc(db,"chantiers", formData.chantierId)
+        updateDoc(docRef3,{
+            availableHours : increment(-formData.numberOfHours),
+            usedHours : increment(formData.numberOfHours)
+        })
+        router.back();
     };
 
     const handleInputChange = (event) => {
