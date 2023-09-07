@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
-import { onSnapshot,collection, addDoc, query, where } from 'firebase/firestore'
+import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc } from 'firebase/firestore'
 import {db} from '../firebase'
 import { useRouter } from 'next/navigation'
 
@@ -19,6 +19,7 @@ export default function logHours(){
 
     const router = useRouter();
 
+    const [worker, setWorker] = useState({});
     const [chantiers, setChantiers] = useState([]);
 
     const [formData, setFormData] = useState({
@@ -26,23 +27,53 @@ export default function logHours(){
         chantierId: null,
     });
 
-    useEffect(() => {
-        const chantiersRef = collection(db, 'chantiers');
-        const q = query(chantiersRef, where("isFinished", "==", false));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-          let itemsArr = [];
-    
-          querySnapshot.forEach((doc) => {
-            itemsArr.push({ ...doc.data(), id: doc.id });
+      useEffect(() => {
+        if(chantiers.length == 0){
+            const chantiersRef = collection(db, 'chantiers');
+            const q = query(chantiersRef, where("isFinished", "==", false));
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+              let itemsArr = [];
+              querySnapshot.forEach((doc) => {
+                itemsArr.push({ ...doc.data(), id: doc.id });
+              });
+              setChantiers(itemsArr);
+              setFormData({
+                numberOfHours : 0,
+                chantierId : itemsArr[0].id
+              })
+              return () => unsubscribe();
+            });
+        }
+        if (session.status != "loading") {
+          const workersRef = collection(db, 'workers');
+          const q = query(workersRef, where("mail", "==", session.data.user.email));
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            let itemsArr = []
+            querySnapshot.forEach((doc) => {
+              itemsArr.push({ ...doc.data(), id: doc.id });
+            });
+            let worker = itemsArr[0];
+            setWorker(worker)
+            return () => unsubscribe();
           });
-          setChantiers(itemsArr);
-          return () => unsubscribe();
-        });
-      }, []);
+        }
+      }, [session]);
 
-    const handleFormSubmit = async (e) => {
-    e.preventDefault()
-    router.back();
+    const handleFormSubmit = async () => {
+        console.log(worker)
+
+        const docRef1 = doc(db, `workers/${worker.id}/chantiers/${formData.chantierId}`)
+        const document = await getDoc(docRef1);
+        if (document.exists()){
+            await updateDoc(docRef1, {"chantierId" : formData.chantierId,"chantierHours" : increment(formData.numberOfHours)})
+        }else{
+            await setDoc(docRef1, {"chantierId" : formData.chantierId,"chantierHours" : increment(formData.numberOfHours)})
+        }
+        const docRef2 = doc(db, `workers`,worker.id)
+        updateDoc(docRef2, {
+            totalHours : increment(formData.numberOfHours)
+        })
+        //router.back();
     };
 
     const handleInputChange = (event) => {
@@ -68,7 +99,7 @@ export default function logHours(){
                     </select>
                 </div>
 
-                <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Valider mes heures</button>
+                <button type="button" onClick={() => handleFormSubmit()} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Valider mes heures</button>
             </form>
         </>
     )

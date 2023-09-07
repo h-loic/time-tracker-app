@@ -23,7 +23,8 @@ export default function Signup() {
                 name,
                 workerId: `${userCredential.user.uid}`,
                 totalHours : 0,
-                mail : email
+                mail : email,
+                chantiers : [],
               });
               signIn('credentials', {email, password, redirect: true, callbackUrl: '/'})
             }catch (e){
