@@ -13,9 +13,9 @@ import {
   query, 
   where
 } from 'firebase/firestore';
-import { db } from './firebase';
+import {db} from '../firebase'
 
-export default function Home() {
+export default function MyInformation() {
 
   const [worker, setWorker] = useState({});
 
@@ -46,15 +46,9 @@ export default function Home() {
     <div className="p-8">
       <h1 className='text-4xl p-4 text-center'>Time Tracker app</h1>
       <div className='text-2xl p-4'>Bienvenue {worker.name }</div>
-      <div className=''>
-        <Link href="/myInformation"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Mes informations</div></Link>
-          <Link href="/logHours"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Noter mes heures</div></Link>
-          <Link href="/chantiers"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Chantiers</div></Link>
-          <div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Ouvriers</div>
-        </div>
       <button className='' onClick={() => signOut()}>Logout</button>
     </div>
   )
 }
 
-Home.requireAuth = true
+MyInformation.requireAuth = true
