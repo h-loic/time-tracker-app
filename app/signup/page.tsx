@@ -1,22 +1,41 @@
 'use client';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { AuthErrorCodes, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function Signup() {
 
+    const [error, setError] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
      const [passwordAgain, setPasswordAgain] = useState('');
 
-  const signup = () => {
+  const signup = async() => {
     createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential)=>{
-            const user = userCredential.user;
-        });
-
+        .then(async (userCredential)=>{
+            console.log(userCredential)
+            try{
+              const docRef = await addDoc(collection(db, "workers"),{
+                name,
+                workerId: `${userCredential.user.uid}`,
+                totalHours : 0,
+                mail : email
+              });
+            }catch (e){
+              console.error("Error :", e);
+      }
+    }
+    ).catch( err => {
+      if (err.code == "auth/email-already-in-use"){
+        setError("mail déjà utilisé")
+      }
+      else if (err.code == AuthErrorCodes.WEAK_PASSWORD){
+        setError("mot de passe trop faible")
+      }
+    })
   };
   
   return (
@@ -100,7 +119,11 @@ export default function Signup() {
                 />
               </div>
             </div>
-
+            <div>
+              {error}
+              <br/>
+              { password != passwordAgain ? "mdp différent" : ""}
+            </div>
             <div>
               <button
                 disabled={(!email || !password || !passwordAgain) || (password !== passwordAgain)}
