@@ -1,4 +1,6 @@
 "use client";
+import { signOut, useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import React, { useState } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
@@ -39,6 +41,13 @@ export default function addChantier() {
     }
     };
 
+    const session = useSession({
+        required: true,
+        onUnauthenticated() {
+          redirect('/signin');
+        },
+      });
+
     return (
         <>
             <h1 className='text-4xl p-4 text-center'>Nouveau chantier</h1>
@@ -60,3 +69,5 @@ export default function addChantier() {
         </>
     )
 }
+
+addChantier.requireAuth = true

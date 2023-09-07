@@ -1,5 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { signOut, useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -53,6 +55,13 @@ export default function Chantiers() {
     }
   }
 
+  const session = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect('/signin');
+    },
+  });
+
   return (
     <>
         <h1 className='text-4xl p-4 text-center'>Baustellen</h1>
@@ -75,3 +84,5 @@ export default function Chantiers() {
       </>
   )
 }
+
+Chantiers.requireAuth = true

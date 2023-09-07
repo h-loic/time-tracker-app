@@ -1,4 +1,6 @@
 "use client";
+import { signOut, useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
@@ -7,6 +9,13 @@ import {db} from '../firebase'
 import { useRouter } from 'next/navigation'
 
 export default function logHours(){
+
+    const session = useSession({
+        required: true,
+        onUnauthenticated() {
+          redirect('/signin');
+        },
+      });
 
     const router = useRouter();
 
@@ -64,3 +73,5 @@ export default function logHours(){
         </>
     )
 }
+
+logHours.requireAuth = true
