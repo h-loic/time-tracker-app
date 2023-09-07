@@ -52,7 +52,7 @@ export default function Home() {
           <Link href="/chantiers"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Chantiers</div></Link>
           <div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Ouvriers</div>
         </div>
-      <button className='' onClick={() => signOut()}>Logout</button>
+      <button className='' onClick={() => signOut()}>se déconnecter</button>
     </div>
   )
 }

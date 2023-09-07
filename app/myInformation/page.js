@@ -44,9 +44,10 @@ export default function MyInformation() {
 
   return (
     <div className="p-8">
-      <h1 className='text-4xl p-4 text-center'>Time Tracker app</h1>
-      <div className='text-2xl p-4'>Bienvenue {worker.name }</div>
-      <button className='' onClick={() => signOut()}>Logout</button>
+      <h1 className='text-4xl p-4 text-center mb-5'>Mes informations</h1>
+      <h2 className='text-2xl p-4'>nom : {worker.name}</h2>
+      <h2 className='text-2xl p-4'>heures total travailler : {worker.totalHours}</h2>
+      <h2 className='text-2xl p-4'>chantiers réalisés : </h2>
     </div>
   )
 }
