@@ -1,6 +1,6 @@
 'use client';
 import { collection } from "firebase/firestore";
-import { doc,getDoc, getDocs, setDoc } from "firebase/firestore";
+import { doc,getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import {db} from '../../firebase'
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
@@ -24,12 +24,7 @@ export default function Details({params : {id}}) {
     }, [id]);
 
     const changeFinishedStatus = async () => {
-      await setDoc(doc(db, 'chantiers', id), {
-          name : chantier.name,
-          budget : chantier.budget,
-          totalHours : chantier.totalHours,
-          availableHours : chantier.availableHours,
-          usedHours : chantier.usedHours,
+      await updateDoc(doc(db, 'chantiers', id), {
           isFinished : !chantier.isFinished
       })
       setChantier({

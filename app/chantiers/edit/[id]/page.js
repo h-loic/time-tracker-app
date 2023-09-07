@@ -31,7 +31,6 @@ export default function EditChantier({params : {id}}) {
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData((prevData) => ({ ...prevData, [name]: value }));
-        console.log(formData);
     };
   
     useEffect(() => {
