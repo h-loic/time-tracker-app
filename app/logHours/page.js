@@ -77,6 +77,15 @@ export default function logHours(){
             availableHours : increment(-formData.numberOfHours),
             usedHours : increment(formData.numberOfHours)
         })
+
+        const docRef4 = doc(db, `chantiers/${formData.chantierId}/workers/${worker.id}`)
+        const document4 = await getDoc(docRef4);
+        if (document4.exists()){
+            await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(formData.numberOfHours)})
+        }else{
+            await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(formData.numberOfHours)})
+        }
+
         router.back();
     };
 

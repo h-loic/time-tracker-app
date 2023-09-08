@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 export default function Details({params : {id}}) {
     const [chantier, setChantier] = useState(null);
+    const [workers, setWorkers] = useState([])
   
     useEffect(() => {
       if (id) {
@@ -15,11 +16,21 @@ export default function Details({params : {id}}) {
         const fetchData = async () => {
           const docSnap = await getDoc(docRef);
           const a = docSnap.data();
-          console.log(a);
           setChantier(a);
           
         }
         fetchData();
+
+        const getWorkers = async () => {
+          const query = await getDocs(collection(db, `chantiers/${id}/workers`))
+          let workersfetch = []
+          query.forEach(element => {
+            workersfetch.push(element.data())
+          });
+          setWorkers(workersfetch);
+        }
+
+        getWorkers();
       }
     }, [id]);
 
@@ -58,6 +69,13 @@ export default function Details({params : {id}}) {
           <h2 className='text-2xl p-4'>Nombre heures utilisés : {chantier.usedHours}</h2>
           <h2 className='text-2xl p-4'>Chantier Terminé : { chantier.isFinished ? "oui" : "non"}</h2>
           <h2 className='text-2xl p-4'>Ouvrier ayant contribués :</h2>
+          <div className=''>
+            { workers.map((worker) => (
+              <Link href={`/`} key={worker.workerId}>
+                <div className="text-center text-slate-50 bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ worker.name } { worker.workedHours }</div>
+              </Link>
+            ))}
+        </div>
         </div>
       }
     </>
