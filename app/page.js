@@ -47,12 +47,15 @@ export default function Home() {
       <h1 className='text-4xl p-4 text-center'>Time Tracker app</h1>
       <div className='text-2xl p-4'>Bienvenue { worker.name }</div>
       <div className=''>
-        <Link href="/myInformation"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Mes informations</div></Link>
-          <Link href="/logHours"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Noter mes heures</div></Link>
-          <Link href="/chantiers"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Chantiers</div></Link>
-          <Link href="/workers"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-3 mt-3">Ouvriers</div></Link>
+          <Link href="/logHours"><div className="uppercase text-slate-50 text-center bg-blue-800 p-4 rounded-lg mb-5 mt-3">Noter mes heures</div></Link>
+          <br/><br/>
+          <Link href="/myInformation"><div className="uppercase text-slate-50 text-center bg-blue-500 p-4 rounded-lg mb-3 mt-5">Mes informations</div></Link>
+          <Link href="/chantiers"><div className="uppercase text-slate-50 text-center bg-blue-500 p-4 rounded-lg mb-3 mt-3">Chantiers</div></Link>
+          <Link href="/workers"><div className="uppercase text-slate-50 text-center bg-blue-500 p-4 rounded-lg mb-3 mt-3">Ouvriers</div></Link>
         </div>
-      <button className='' onClick={() => signOut()}>se déconnecter</button>
+      <button onClick={() => signOut()} class="absolute bottom-0 center mb-5 bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded">
+        se déconnecter
+      </button>
     </div>
   )
 }
