@@ -19,7 +19,6 @@ import { parse, getTime } from 'date-fns';
 import "react-datepicker/dist/react-datepicker.css";
 
 export default function logHours(){
-
     const session = useSession({
         required: true,
         onUnauthenticated() {
@@ -34,7 +33,7 @@ export default function logHours(){
 
     const [date, setDate] = useState(new Date());
     const [message,setMessage] = useState("");
-    const [worker, setWorker] = useState({});
+    const [worker, setWorker] = useState(undefined);
     const [chantiers, setChantiers] = useState([]);
 
     const [loaded,setLoaded] = useState(false)
@@ -42,8 +41,33 @@ export default function logHours(){
     const [loggedChantiers, setloggedChantiers] = useState([]); 
 
       useEffect(() => {
-        if(chantiers.length == 0 && !loaded){
+        const setData = (workerId) =>{
+          if(chantiers.length == 0 && !loaded){
             setLoaded(true)
+
+            let alreadyExist = true;
+            let currentDate = new Date();
+            let annee = currentDate.getFullYear();
+            let mois = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
+            let jour = currentDate.getDate().toString().padStart(2, '0');
+            let formatDate = `${annee}-${mois}-${jour} `;
+            let parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
+            let timestamp = getTime(parsedDate);
+            const check = async () =>{
+              const docRef7 = doc(db, `workers/${workerId}/workedDay/${timestamp}`)
+              const document7 = await getDoc(docRef7);
+              if (document7.exists()){
+                const data = document7.data();
+                console.log(data.loggedChantiers)
+                setloggedChantiers(data.loggedChantiers)
+              }else{
+                console.log("dac")
+                alreadyExist = false
+              }
+            }
+            check();
+
+
             const chantiersRef = collection(db, 'chantiers');
             const q = query(chantiersRef, where("isFinished", "==", false));
             const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -52,11 +76,14 @@ export default function logHours(){
                 itemsArr.push({ ...doc.data(), id: doc.id });
               });
               setChantiers(itemsArr);
-              setloggedChantiers(oldArray => [...oldArray, {chantier : itemsArr[0].id, taskHours : chantierTaskHours}]);
+              if (!alreadyExist){
+                setloggedChantiers(oldArray => [...oldArray, {chantier : itemsArr[0].id, taskHours : chantierTaskHours}]);
+              }
               return () => unsubscribe();
             });
+          }
         }
-        if (session.status != "loading") {
+        if (session.status != "loading" && worker == undefined) {
           const workersRef = collection(db, 'workers');
           const q = query(workersRef, where("mail", "==", session.data.user.email));
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -66,15 +93,13 @@ export default function logHours(){
             });
             let worker = itemsArr[0];
             setWorker(worker)
+            setData(worker.id);
             return () => unsubscribe();
           });
         }
       }, [session]);
 
-    const notify = () => toast("Wow so easy!");
-
-    const handleFormSubmit = async () => {
-
+    const storeHours = async () => {
         try{
           let totalHours = 0;
           loggedChantiers.forEach(async chantier => {
@@ -98,6 +123,7 @@ export default function logHours(){
             }else{
                 await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : totalHours})
             }
+
             const docRef2 = doc(db, `workers`,worker.id)
             updateDoc(docRef2, {
                 totalHours : increment(totalHours)
@@ -112,9 +138,9 @@ export default function logHours(){
             const docRef4 = doc(db, `chantiers/${chantier.chantier}/workers/${worker.id}`)
             const document4 = await getDoc(docRef4);
             if (document4.exists()){
-                await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHours})
+                await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
             }else{
-                await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
+                await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHours})
             }
 
             const annee = date.getFullYear();
@@ -130,24 +156,21 @@ export default function logHours(){
             const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
             const document6 = await getDoc(docRef6);
             if (document6.exists()){
-                await updateDoc(docRef6, {"hours" : increment(totalHours), "message" : message, "timestamp" : timestamp })
+                await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
             }else{
-                await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp })
+                await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
             }
           })
-
-          //setloggedChantiers([])
-          //setloggedChantiers(oldArray => [...oldArray, {chantier : chantiers[0], taskHours : chantierTaskHours}]);
-            toast.success('vos heures ont bien été enregistrés !', {
-              position: "top-center",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-              });
+          toast.success('vos heures ont bien été enregistrés !', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            });
         }catch(e){
           console.log(e);
           toast.error('une erreur c est produite !', {
@@ -192,7 +215,6 @@ export default function logHours(){
     const removechantier = (index) => {
       loggedChantiers.splice(index,1);
       setloggedChantiers(oldArray => [...loggedChantiers]);
-      console.log(loggedChantiers)
     }
 
     const addOtherTask = (index) => {
@@ -266,6 +288,7 @@ export default function logHours(){
                               <div className='flex items-center justify-center bg-slate-700 rounded-md content-center text-center text-white font-bold text-sm'>Atelier</div>
                               <div className="">
                                 <input placeholder="heures"
+                                defaultValue={loggedChantier.taskHours[0].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, 0)} 
                                 type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
                               </div>
@@ -274,6 +297,7 @@ export default function logHours(){
                               <div className='flex items-center justify-center bg-slate-700 rounded-md content-center text-center text-white font-bold text-sm'>Chantier</div>
                               <div className="">
                                 <input placeholder="heures" 
+                                defaultValue={loggedChantier.taskHours[1].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, 1)} 
                                 type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
                               </div>
@@ -282,6 +306,7 @@ export default function logHours(){
                               <div className='flex items-center justify-center bg-slate-700 rounded-md content-center text-center text-white font-bold text-sm'>Regie</div>
                               <div className="">
                                 <input placeholder="heures" 
+                                defaultValue={loggedChantier.taskHours[2].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, 2)} 
                                 type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
                               </div>
@@ -291,12 +316,16 @@ export default function logHours(){
                             { taskIndex < 3 ? <></> :
                             <div key={task.taskIndex} className='grid grid-cols-4 mt-2 mb-2'>
                               <div className='col-span-2'>
-                                <input placeholder='new task' id={taskIndex + index} name="chantierId" onChange={(e) => handleTaskChange(e,index,taskIndex)}
+                                <input 
+                                type='text' placeholder='new task'
+                                defaultValue={loggedChantier.taskHours[taskIndex].task}
+                                id={taskIndex + index} name="chantierId" onChange={(e) => handleTaskChange(e,index,taskIndex)}
                                 className="rounded-l-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required>
                                 </input>
                               </div>
                               <div className="">
                                 <input placeholder="heures" 
+                                defaultValue={loggedChantier.taskHours[taskIndex].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, taskIndex)} 
                                 type="number" name="numberOfHours" className="rounded-r-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
                               </div>
@@ -321,7 +350,7 @@ export default function logHours(){
                 <label htmlFor="message" className="block mt-3 mb-0 text-sm font-medium text-gray-900 dark:text-white">ajouter un message</label>
                 <textarea id="message" onChange={(e) => setMessage(e.target.value)} rows="4" className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder=""></textarea>
                 <br/><br/>
-                <button type="button" onClick={() => handleFormSubmit()} className="text-white bg-green-700 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-gree-700 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-700 dark:hover:bg-green-700 dark:focus:ring-green-800">Valider mes heures</button>
+                <button type="button" onClick={() => storeHours()} className="text-white bg-green-700 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-gree-700 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-700 dark:hover:bg-green-700 dark:focus:ring-green-800">Valider mes heures</button>
                 <br/><br/>
                 <button type="button" onClick={() => router.back()} className="text-white bg-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-600 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-600 dark:focus:ring-red-800">Annuler</button>
               </div>

@@ -23,6 +23,7 @@ export default function MyInformation() {
 
   const [worker, setWorker] = useState({});
   const [chantiers, setChantiers] = useState([]);
+  const [weekHours,setWeekHours] = useState(0);
   const [monthHours,setMonthHours] = useState(0);
 
   const session = useSession({
@@ -57,21 +58,37 @@ export default function MyInformation() {
             setChantiers(chantiersArray)
         });
         */
+
+        let totalWeekHours = 0
         const dateActuelle = new Date();
-        dateActuelle.setDate(1); // Définir le jour sur 1 pour obtenir le premier jour du mois
-        const timestampOfTheMonth = dateActuelle.getTime();
-
-
-        let totalMonthHours = 0;
+        const jourActuel = dateActuelle.getDay();
+        const premierJourDeLaSemaine = 1; // 0 pour dimanche, 1 pour lundi, 2 pour mardi, etc.
+        const joursASoustraire = (jourActuel - premierJourDeLaSemaine + 7) % 7;
+        dateActuelle.setDate(dateActuelle.getDate() - joursASoustraire);
+        const timestampOfTheWeek = dateActuelle.getTime();
         const workersRef2 = collection(db, `workers/${worker.id}/workedDay/`);
-        const q2 = query(workersRef2, where("timestamp", ">", timestampOfTheMonth));
+        const q2 = query(workersRef2, where("timestamp", ">", timestampOfTheWeek));
         const querySnapshot2 = await getDocs(q2);
         querySnapshot2.forEach((doc) => {
+          // doc.data() is never undefined for query doc snapshots
+          console.log(doc.id, " => ", doc.data());
+          totalWeekHours+= doc.data().hours
+        });
+        setWeekHours(totalWeekHours);
+
+        let totalMonthHours = 0;
+        dateActuelle.setDate(1); // Définir le jour sur 1 pour obtenir le premier jour du mois
+        const timestampOfTheMonth = dateActuelle.getTime();
+        const workersRef3 = collection(db, `workers/${worker.id}/workedDay/`);
+        const q3 = query(workersRef3, where("timestamp", ">", timestampOfTheMonth));
+        const querySnapshot3 = await getDocs(q3);
+        querySnapshot3.forEach((doc) => {
           // doc.data() is never undefined for query doc snapshots
           console.log(doc.id, " => ", doc.data());
           totalMonthHours+= doc.data().hours
         });
         setMonthHours(totalMonthHours);
+
         return () => unsubscribe();
       });
     }
@@ -82,8 +99,8 @@ export default function MyInformation() {
       <NavBar/>
       <div className="pb-8 pl-8 pr-8">
         <h1 className='text-4xl p-4 text-center mb-5'>{worker.name}</h1>
-        <h2 className='text-2xl p-4'>heures total travailler : {monthHours}</h2>
-
+        <h2 className='text-2xl p-4'>heures travallé cette semaine : {weekHours}</h2>
+        <h2 className='text-2xl p-4'>heures travallé ce mois : {monthHours}</h2>
       </div>
     </>
   )
