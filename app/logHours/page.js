@@ -1,7 +1,7 @@
 "use client";
 import { signOut, useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
 import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc } from 'firebase/firestore'
@@ -32,6 +32,7 @@ export default function logHours(){
     const chantierTaskHours = [{task : "atelier", hours : 0},{task : "chantier", hours : 0}, {task : "regie", hours : 0}];
 
     const [date, setDate] = useState(new Date());
+    const [message,setMessage] = useState("");
     const [worker, setWorker] = useState({});
     const [chantiers, setChantiers] = useState([]);
 
@@ -54,7 +55,6 @@ export default function logHours(){
               return () => unsubscribe();
             });
         }
-        //setloggedChantiers(oldArray => [...oldArray, {chantier : "zdfz", taskHours : chantierTaskHours}]);
         if (session.status != "loading") {
           const workersRef = collection(db, 'workers');
           const q = query(workersRef, where("mail", "==", session.data.user.email));
@@ -123,15 +123,17 @@ export default function logHours(){
 
             const docRef6 = doc(db, `workers/${worker.id}/workedDay/${formatDate}`)
             const document6 = await getDoc(docRef6);
+            console.log(totalHours);
+            console.log(message)
             if (document6.exists()){
-                await updateDoc(docRef6, {"hours" : increment(totalHours) })
+                await updateDoc(docRef6, {"hours" : increment(totalHours), "message" : message })
             }else{
-                await setDoc(docRef6, {"hours" : totalHours })
+                await setDoc(docRef6, {"hours" : totalHours, "message" : message })
             }
           })
 
-          setloggedChantiers([])
-          setloggedChantiers(oldArray => [...oldArray, {chantier : chantiers[0], taskHours : chantierTaskHours}]);
+          //setloggedChantiers([])
+          //setloggedChantiers(oldArray => [...oldArray, {chantier : chantiers[0], taskHours : chantierTaskHours}]);
             toast.success('vos heures ont bien été enregistrés !', {
               position: "top-center",
               autoClose: 5000,
@@ -201,6 +203,15 @@ export default function logHours(){
       setloggedChantiers(oldArray => [...loggedChantiers]);
     }
 
+    const refClick = React.useRef()
+
+    const [test,setTest] = useState([])
+
+    const simulateClick = () => {
+      refClick.current.state.open = true;
+      setTest(old => [...[]])
+    }
+
     return(
         <>
             <ToastContainer
@@ -222,10 +233,11 @@ export default function logHours(){
               </div>
             <div>
                 <div className='grid grid-cols-2 border-solid border border-teal-800 rounded'>
-                  <button className="bg-teal-800 hover:bg-teal-800 text-white font-bold">
+                  <button onClick={() => simulateClick()} className="bg-teal-800 hover:bg-teal-800 text-white font-bold">
                       Modifier la date
                   </button>
                   <DatePicker
+                    ref={refClick}
                     className="font-bold w-full"
                     showIcon
                     selected={date}
@@ -273,21 +285,21 @@ export default function logHours(){
                           {loggedChantier.taskHours.length > 3 ? loggedChantier.taskHours.map((task,taskIndex) =>(
                             <>
                             { taskIndex < 3 ? <></> :
-                            <div key={task.taskIndex} className='grid grid-cols-3 gap-4 mb-2'>
-                              <div>
-                                <input id={taskIndex + index} name="chantierId" onChange={(e) => handleTaskChange(e,index,taskIndex)}
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+                            <div key={task.taskIndex} className='grid grid-cols-4 mt-2 mb-2'>
+                              <div className='col-span-2'>
+                                <input placeholder='new task' id={taskIndex + index} name="chantierId" onChange={(e) => handleTaskChange(e,index,taskIndex)}
+                                className="rounded-l-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required>
                                 </input>
                               </div>
                               <div className="">
-                                <input placeholder="entré le nombre d'heures" 
+                                <input placeholder="heures" 
                                 onChange={(e) => handleNumberHoursChange(e, index, taskIndex)} 
-                                type="number" name="numberOfHours" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required/>
+                                type="number" name="numberOfHours" className="rounded-r-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
                               </div>
-                              <button onClick={() => removeTask(index,taskIndex)}
-                              type="button" className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
-                                Supprimer
-                                </button>
+                              <a onClick={() => removeTask(index,taskIndex)}
+                                type="button" className="flex items-center justify-center h-full focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                <FaTrashAlt size="1.2em" color="white"/>
+                                </a>
                             </div>
                            }
                            </>
@@ -301,11 +313,13 @@ export default function logHours(){
                       </div>
                     ))
                   }
-                <button type='button' className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={addOtherChantier}>ajouter des heures à un autre chantier</button>
-                <br/><br/><br/>
-                <button type="button" onClick={() => handleFormSubmit()} className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-blue-700 dark:focus:ring-green-800">Valider mes heures</button>
+                <button type='button' className="text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-teal-600 dark:hover:bg-teal-700 dark:focus:ring-teal-800" onClick={addOtherChantier}>ajouter un chantier</button>
+                <label htmlFor="message" className="block mt-3 mb-0 text-sm font-medium text-gray-900 dark:text-white">ajouter un message</label>
+                <textarea id="message" onChange={(e) => setMessage(e.target.value)} rows="4" className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder=""></textarea>
                 <br/><br/>
-                <button type="button" onClick={() => router.back()} className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">Annuler</button>
+                <button type="button" onClick={() => handleFormSubmit()} className="text-white bg-green-700 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-gree-700 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-700 dark:hover:bg-green-700 dark:focus:ring-green-800">Valider mes heures</button>
+                <br/><br/>
+                <button type="button" onClick={() => router.back()} className="text-white bg-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-600 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-600 dark:focus:ring-red-800">Annuler</button>
               </div>
             </div>
         </>
