@@ -13,6 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import NavBar from '../../components/navBar';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTrashAlt } from 'react-icons/fa';
+import { parse, getTime } from 'date-fns';
 
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -121,14 +122,17 @@ export default function logHours(){
             const jour = date.getDate().toString().padStart(2, '0');
             const formatDate = `${annee}-${mois}-${jour} `;
 
-            const docRef6 = doc(db, `workers/${worker.id}/workedDay/${formatDate}`)
+            const parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
+
+            // Obtenez le timestamp (en millisecondes)
+            const timestamp = getTime(parsedDate);
+
+            const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
             const document6 = await getDoc(docRef6);
-            console.log(totalHours);
-            console.log(message)
             if (document6.exists()){
-                await updateDoc(docRef6, {"hours" : increment(totalHours), "message" : message })
+                await updateDoc(docRef6, {"hours" : increment(totalHours), "message" : message, "timestamp" : timestamp })
             }else{
-                await setDoc(docRef6, {"hours" : totalHours, "message" : message })
+                await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp })
             }
           })
 
