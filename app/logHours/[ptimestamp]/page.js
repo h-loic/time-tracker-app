@@ -5,12 +5,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
 import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc } from 'firebase/firestore'
-import {db} from '../firebase'
+import {db} from '../../firebase'
 import { useRouter } from 'next/navigation'
 import DatePicker from "react-datepicker";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import NavBar from '../../components/navBar';
+import NavBar from '../../../components/navBar';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTrashAlt } from 'react-icons/fa';
 import { parse, getTime } from 'date-fns';
@@ -18,7 +18,7 @@ import { parse, getTime } from 'date-fns';
 
 import "react-datepicker/dist/react-datepicker.css";
 
-export default function logHours(){
+export default function logHours({params : {ptimestamp}}){
     const session = useSession({
         required: true,
         onUnauthenticated() {
@@ -31,7 +31,7 @@ export default function logHours(){
     const taskHours = {task : "", hours : 0}
     const chantierTaskHours = [{task : "atelier", hours : 0},{task : "chantier", hours : 0}, {task : "regie", hours : 0}];
 
-    const [date, setDate] = useState(new Date());
+    const [date, setDate] = useState(new Date(parseInt(ptimestamp)));
     const [message,setMessage] = useState("");
     const [worker, setWorker] = useState(undefined);
     const [chantiers, setChantiers] = useState([]);
@@ -40,19 +40,14 @@ export default function logHours(){
 
     const [loggedChantiers, setloggedChantiers] = useState([]); 
 
+
       useEffect(() => {
-        const setData = (workerId) =>{
+        const setData = async (workerId) =>{
           if(chantiers.length == 0 && !loaded){
             setLoaded(true)
-
-            let alreadyExist = true;
-            let currentDate = new Date();
-            let annee = currentDate.getFullYear();
-            let mois = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
-            let jour = currentDate.getDate().toString().padStart(2, '0');
-            let formatDate = `${annee}-${mois}-${jour} `;
-            let parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
-            let timestamp = getTime(parsedDate);
+            var alreadyExist = true;
+            let timestamp = ptimestamp;
+            //setDate(new Date(ptimestamp))
             const check = async () =>{
               const docRef7 = doc(db, `workers/${workerId}/workedDay/${timestamp}`)
               const document7 = await getDoc(docRef7);
@@ -61,12 +56,10 @@ export default function logHours(){
                 console.log(data.loggedChantiers)
                 setloggedChantiers(data.loggedChantiers)
               }else{
-                console.log("dac")
                 alreadyExist = false
               }
             }
-            check();
-
+            await check();
 
             const chantiersRef = collection(db, 'chantiers');
             const q = query(chantiersRef, where("isFinished", "==", false));
@@ -76,7 +69,9 @@ export default function logHours(){
                 itemsArr.push({ ...doc.data(), id: doc.id });
               });
               setChantiers(itemsArr);
+              console.log(alreadyExist)
               if (!alreadyExist){
+                console.log("set not exist")
                 setloggedChantiers(oldArray => [...oldArray, {chantier : itemsArr[0].id, taskHours : chantierTaskHours}]);
               }
               return () => unsubscribe();
