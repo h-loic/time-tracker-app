@@ -256,9 +256,10 @@ export default function MyInformation() {
     setSelectedMonth(firstDay.getTime());
   };
 
-  const telechargerExcel = () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Feuille 1');
+  const telechargerMoisExcel = () => {
+
+    let workbook = new ExcelJS.Workbook();
+    let worksheet = workbook.addWorksheet('Feuille 1');
 
     let moisAnnee = months[date.getMonth()] +" "+ date.getFullYear(); 
     worksheet.getCell('A1').value = "mois : ";
@@ -298,12 +299,159 @@ export default function MyInformation() {
   
     // Créez un objet Blob à partir du contenu Excel
     workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      let blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   
       // Créez un lien d'ancrage pour le téléchargement du fichier
-      const a = document.createElement('a');
+      let a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'donnees_excel.xlsx';
+      let name = moisAnnee + '.xlsx';
+      a.download = name;
+      a.style.display = 'none'; // Cachez le lien
+  
+      // Ajoutez le lien d'ancrage au DOM
+      document.body.appendChild(a);
+  
+      // Simulez un clic sur le lien pour déclencher le téléchargement
+      a.click();
+  
+      // Libérez l'URL et supprimez l'élément ancre après le téléchargement
+      window.URL.revokeObjectURL(a.href);
+      document.body.removeChild(a);
+    });
+  }
+
+  const telechargerAnneeExcel = async() => {
+    let tableDataOfTheYear = {};
+    let year = date.getFullYear();
+
+    let AllFirstDay = [];
+    let firstDayOfTheMonth = new Date(year ,0, 1)
+    AllFirstDay.push(firstDayOfTheMonth.getDay());
+    let firstDayOfTheNextMonth;
+    let nextMonth = 0;
+    let i = 0;
+    while(i < 12){
+      nextMonth+=1;
+      let taille = getNumberOfDaysInMonth(year, nextMonth-1); 
+      let tableau = Array.from({ length: taille }, () => noWork);
+      if (tableData[firstDayOfTheMonth.getTime()] == undefined){
+        firstDayOfTheNextMonth = new Date(year, nextMonth, 1);
+        let workersRef = collection(db, `workers/${worker.id}/workedDay/`);
+        let q = query(workersRef, where("timestamp", ">=", firstDayOfTheMonth.getTime()), where("timestamp", "<", firstDayOfTheNextMonth.getTime()));
+        let querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          // doc.data() is never undefined for query doc snapshots
+          let data = doc.data() 
+          let tempTimestamp = data.timestamp;
+          let tempDate = new Date(tempTimestamp);  
+          tableau[tempDate.getDate()] = {"hours" : data.hours, "message" : data.message, "day" : tempDate.getDay()}
+        });
+        tableDataOfTheYear[firstDayOfTheMonth.getTime()] = tableau;
+      }else{
+        tableDataOfTheYear[firstDayOfTheMonth.getTime()] = tableData[firstDayOfTheMonth.getTime()];
+      }
+      firstDayOfTheMonth = new Date(year, nextMonth, 1);
+      AllFirstDay.push(firstDayOfTheMonth.getDay());
+      i+=1
+    }
+
+
+
+    let workbook = new ExcelJS.Workbook();
+    let worksheet = workbook.addWorksheet('Feuille 1');
+
+    let caseA;
+    for (let i = 2; i <= 32; i++){
+      caseA = 'A' + i; 
+      worksheet.getCell(caseA).value = i-1;
+      worksheet.getCell(caseA).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'A9A9A9' }, // Couleur de fond (ici, rose)
+      };
+    }
+
+    worksheet.getCell("A34").value = "Total :";
+
+    worksheet.getCell("B1").value = "jan";
+    worksheet.getCell("C1").value = "feb";
+    worksheet.getCell("D1").value = "mar";
+    worksheet.getCell("E1").value = "apr";
+    worksheet.getCell("F1").value = "mai";
+    worksheet.getCell("G1").value = "jun";
+    worksheet.getCell("H1").value = "jul";
+    worksheet.getCell("I1").value = "aug";
+    worksheet.getCell("J1").value = "sep";
+    worksheet.getCell("K1").value = "okt";
+    worksheet.getCell("L1").value = "nov";
+    worksheet.getCell("M1").value = "dez";
+
+    worksheet.getCell("B1").font = {bold : true};
+    worksheet.getCell("C1").font = {bold : true};
+    worksheet.getCell("D1").font = {bold : true};
+    worksheet.getCell("E1").font = {bold : true};
+    worksheet.getCell("F1").font = {bold : true};
+    worksheet.getCell("G1").font = {bold : true};
+    worksheet.getCell("H1").font = {bold : true};
+    worksheet.getCell("I1").font = {bold : true};
+    worksheet.getCell("J1").font = {bold : true};
+    worksheet.getCell("K1").font = {bold : true};
+    worksheet.getCell("L1").font = {bold : true};
+    worksheet.getCell("M1").font = {bold : true};
+
+    let letter = ["B","C","D","E","F","G","H","I","J","K","L","M"];
+    let letterIndex = 0;
+
+    let tempDataMonth;
+    let tempCase;
+    let tempIndex;
+    let tempFirstDay;
+    let firstDayIndex = 0;
+    for (const monthData in tableDataOfTheYear) {
+      tempDataMonth = tableDataOfTheYear[monthData];
+      tempFirstDay = AllFirstDay[firstDayIndex];
+      for (let i = 0; i < tempDataMonth.length; i++){
+        tempIndex = i + 2;
+        tempCase = letter[letterIndex] + tempIndex;
+        worksheet.getCell(tempCase).value = tempDataMonth[i].hours;
+        if (isWeekend(tempFirstDay, i+1)){
+          worksheet.getCell(tempCase).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '0F0F0F' }, // Couleur de fond (ici, rose)
+          };
+        }
+      }
+      firstDayIndex++;
+      letterIndex++;
+    }
+
+    worksheet.getCell('B34').value = { formula: 'SUM(B2:B32)' };
+    worksheet.getCell('C34').value = { formula: 'SUM(C2:C32)' };
+    worksheet.getCell('D34').value = { formula: 'SUM(D2:D32)' };
+    worksheet.getCell('E34').value = { formula: 'SUM(E2:E32)' };
+    worksheet.getCell('F34').value = { formula: 'SUM(F2:F32)' };
+    worksheet.getCell('G34').value = { formula: 'SUM(G2:G32)' };
+    worksheet.getCell('H34').value = { formula: 'SUM(H2:H32)' };
+    worksheet.getCell('I34').value = { formula: 'SUM(I2:I32)' };
+    worksheet.getCell('J34').value = { formula: 'SUM(J2:J32)' };
+    worksheet.getCell('K34').value = { formula: 'SUM(K2:K32)' };
+    worksheet.getCell('L34').value = { formula: 'SUM(L2:L32)' };
+    worksheet.getCell('M34').value = { formula: 'SUM(M2:M32)' };
+
+    worksheet.getCell('G36').value = "TOTAL :";
+    worksheet.getCell('H36').value = { formula: 'SUM(B34:M34)' };
+
+  
+    // Créez un objet Blob à partir du contenu Excel
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      let blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  
+      // Créez un lien d'ancrage pour le téléchargement du fichier
+      let a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      let name = date.getFullYear() + '.xlsx';
+      a.download = name;
       a.style.display = 'none'; // Cachez le lien
   
       // Ajoutez le lien d'ancrage au DOM
@@ -409,9 +557,11 @@ export default function MyInformation() {
         }
         <div className='w-full p-2 border-2 border-teal-800 mb-3'>Total Heure :  {monthHours} </div>
         <div className='grid grid-cols-2 gap-4'>
-          <></>
-          <button onClick={telechargerExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-900'>
-            exporter en excel
+          <button onClick={telechargerMoisExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-900'>
+            exporter ce mois en excel
+          </button>
+          <button onClick={telechargerAnneeExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-900'>
+            exporter cette année en excel
           </button>
         </div>
     </>
