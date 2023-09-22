@@ -28,10 +28,11 @@ export default function MyInformation() {
   const [monthHours,setMonthHours] = useState(0);
   const [date, setDate] = useState(new Date());
 
-  const [tableData,setTableData] = useState({})
+  const [tableData,setTableData] = useState({});
   const [selectedMonth, setSelectedMonth] = useState(undefined);
   const noWork = {"hours" : 0, "message" : "", "day" : 0};
-  const [alreadyLoaded,setAlreadyLoaded] = useState(false)
+  const [alreadyLoaded,setAlreadyLoaded] = useState(false);
+  const [firstDayDay,setFirstDayDay] = useState(0);
 
   const session = useSession({
     required: true,
@@ -79,6 +80,7 @@ export default function MyInformation() {
         const nextMonth = new Date(year, moisSuivant, 1);
         let timestampOfTheNextMonth = nextMonth.getTime();
         let timestampOfTheMonth = firstDay.getTime();
+        setFirstDayDay(firstDay.getDay());
 
         let workersRef3 = collection(db, `workers/${worker.id}/workedDay/`);
         let q3 = query(workersRef3, where("timestamp", ">=", timestampOfTheMonth), where("timestamp", "<", timestampOfTheNextMonth));
@@ -111,32 +113,40 @@ export default function MyInformation() {
     if (moisPrecedent == 11) {
       annee-=1
     }
+
     let MonthDate = new Date(annee, moisPrecedent, 1);
     setDate(MonthDate)
-    let year = MonthDate.getFullYear();
-    let month = MonthDate.getMonth();
-    let totalMonthHours = 0;
-    let taille = getNumberOfDaysInMonth(year, month); 
-    tableData[MonthDate.getTime()] = [];
-    let tableau = Array.from({ length: taille }, () => noWork);
     MonthDate.setDate(1); // Définir le jour sur 1 pour obtenir le premier jour du mois
     let timestampOfTheMonth = MonthDate.getTime();
-    let workersRef3 = collection(db, `workers/${worker.id}/workedDay/`);
+    setFirstDayDay(MonthDate.getDay());
+    let totalMonthHours = 0;
+    if(tableData[timestampOfTheMonth] == undefined){
+      let year = MonthDate.getFullYear();
+      let month = MonthDate.getMonth();
+      let taille = getNumberOfDaysInMonth(year, month); 
+      tableData[MonthDate.getTime()] = [];
+      let tableau = Array.from({ length: taille }, () => noWork);
+      let workersRef3 = collection(db, `workers/${worker.id}/workedDay/`);
 
-    let q3 = query(workersRef3,where("timestamp", "<", timestampOfTheNextMonth), where("timestamp", ">=", timestampOfTheMonth));
-    let querySnapshot3 = await getDocs(q3);
-    querySnapshot3.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      let data = doc.data() 
-      let tempTimestamp = data.timestamp;
-      let tempDate = new Date(tempTimestamp);
-      tableau[tempDate.getDate()-1] = {"hours" : data.hours, "message" : data.message, "day" : tempDate.getDay()}
-      totalMonthHours+= data.hours
-    });
-    tableData[MonthDate.getTime()] = tableau;
-    setTableData(...[tableData])
-    setSelectedMonth(MonthDate.getTime());
+      let q3 = query(workersRef3,where("timestamp", "<", timestampOfTheNextMonth), where("timestamp", ">=", timestampOfTheMonth));
+      let querySnapshot3 = await getDocs(q3);
+      querySnapshot3.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        let data = doc.data() 
+        let tempTimestamp = data.timestamp;
+        let tempDate = new Date(tempTimestamp);
+        tableau[tempDate.getDate()-1] = {"hours" : data.hours, "message" : data.message, "day" : tempDate.getDay()}
+        totalMonthHours+= data.hours
+      });
+      tableData[MonthDate.getTime()] = tableau;
+      setTableData(...[tableData])
+    }else{
+        tableData[timestampOfTheMonth].forEach(element => {
+          totalMonthHours+= element.hours
+        });
+    }
     setMonthHours(totalMonthHours);
+    setSelectedMonth(MonthDate.getTime());
   }
 
   const loadMonthNext = async () => {
@@ -148,45 +158,127 @@ export default function MyInformation() {
     }
     let MonthDate = new Date(annee, moisSuivant, 1);
     setDate(MonthDate)
-    let year = MonthDate.getFullYear();
-    let month = MonthDate.getMonth();
-    let totalMonthHours = 0;
-    let taille = getNumberOfDaysInMonth(year, month); 
-    tableData[MonthDate.getTime()] = [];
-    let tableau = Array.from({ length: taille }, () => noWork);
-    MonthDate.setDate(1); // Définir le jour sur 1 pour obtenir le premier jour du mois
     let timestampOfTheMonth = MonthDate.getTime();
+    setFirstDayDay(MonthDate.getDay());
+    let totalMonthHours = 0;
+    if (tableData[timestampOfTheMonth] == undefined){
+      let year = MonthDate.getFullYear();
+      let month = MonthDate.getMonth();
+      let taille = getNumberOfDaysInMonth(year, month); 
+      tableData[MonthDate.getTime()] = [];
+      let tableau = Array.from({ length: taille }, () => noWork);
+      MonthDate.setDate(1); // Définir le jour sur 1 pour obtenir le premier jour du mois
 
-    let premierJourDuMoisSuivant = new Date(MonthDate);
-    premierJourDuMoisSuivant.setMonth(MonthDate.getMonth() + 1);
-    premierJourDuMoisSuivant.setDate(1);
-    let timestampOfTheNextMonth = premierJourDuMoisSuivant.getTime();
-    let workersRef3 = collection(db, `workers/${worker.id}/workedDay/`);
-    let q3 = query(workersRef3,where("timestamp", ">=", timestampOfTheMonth), where("timestamp", "<", timestampOfTheNextMonth));
-    let querySnapshot3 = await getDocs(q3);
-    querySnapshot3.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      let data = doc.data() 
-      let tempTimestamp = data.timestamp;
-      let tempDate = new Date(tempTimestamp);
-      tableau[tempDate.getDate()-1] = {"hours" : data.hours, "message" : data.message, "day" : tempDate.getDay()}
-      totalMonthHours+= data.hours
-    });
-    tableData[MonthDate.getTime()] = tableau;
-    setTableData(...[tableData])
-    setSelectedMonth(MonthDate.getTime());
+      let premierJourDuMoisSuivant = new Date(MonthDate);
+      premierJourDuMoisSuivant.setMonth(MonthDate.getMonth() + 1);
+      premierJourDuMoisSuivant.setDate(1);
+      let timestampOfTheNextMonth = premierJourDuMoisSuivant.getTime();
+      let workersRef3 = collection(db, `workers/${worker.id}/workedDay/`);
+      let q3 = query(workersRef3,where("timestamp", ">=", timestampOfTheMonth), where("timestamp", "<", timestampOfTheNextMonth));
+      let querySnapshot3 = await getDocs(q3);
+      querySnapshot3.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        let data = doc.data() 
+        let tempTimestamp = data.timestamp;
+        let tempDate = new Date(tempTimestamp);
+        tableau[tempDate.getDate()-1] = {"hours" : data.hours, "message" : data.message, "day" : tempDate.getDay()}
+        totalMonthHours+= data.hours
+      });
+      tableData[MonthDate.getTime()] = tableau;
+      setTableData(...[tableData])
+    }else{
+      tableData[timestampOfTheMonth].forEach(element => {
+        totalMonthHours+= element.hours
+      });
+    }
     setMonthHours(totalMonthHours);
+    setSelectedMonth(MonthDate.getTime());
   }
+
+  const isWeekend = (firstDay, index) => {
+    if (((firstDay + index)% 7 == 0) || ((firstDay + index)% 7 == 6)){
+      return true;
+    } 
+    return false;
+  }
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isOpen, setIsOpen] = useState(false);
+  const handleClick = (e) => {
+    e.preventDefault();
+    setIsOpen(!isOpen);
+  };
+
+  const handleChange = async (e) => {
+    setIsOpen(!isOpen);
+    setSelectedDate(e);
+
+    let totalMonthHours = 0;
+    setDate(new Date(e.getFullYear(), e.getMonth(), 1));
+
+    let year = e.getFullYear();
+    let month = e.getMonth();
+    let taille = getNumberOfDaysInMonth(year, month); 
+    let tableau = Array.from({ length: taille }, () => noWork);
+
+    let firstDay = new Date(year, month, 1);
+    const moisSuivant = month === 11 ? 0 : month + 1;
+    if (moisSuivant == 0) {
+      year+=1
+    }
+    let timestampOfTheMonth = firstDay.getTime();
+    setFirstDayDay(firstDay.getDay());
+    if (tableData[timestampOfTheMonth] == undefined){
+      const nextMonth = new Date(year, moisSuivant, 1);
+      let timestampOfTheNextMonth = nextMonth.getTime();
+  
+      let workersRef3 = collection(db, `workers/${worker.id}/workedDay/`);
+      let q3 = query(workersRef3, where("timestamp", ">=", timestampOfTheMonth), where("timestamp", "<", timestampOfTheNextMonth));
+      let querySnapshot3 = await getDocs(q3);
+      querySnapshot3.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        let data = doc.data() 
+        let tempTimestamp = data.timestamp;
+        let tempDate = new Date(tempTimestamp);  
+        tableau[tempDate.getDate()-1] = {"hours" : data.hours, "message" : data.message, "day" : tempDate.getDay()}
+        totalMonthHours+= data.hours
+      });
+  
+      tableData[firstDay.getTime()] = tableau;
+      setTableData(tableData)
+    }else{
+      tableData[timestampOfTheMonth].forEach(element => {
+        totalMonthHours+= element.hours
+      });
+    }
+    setMonthHours(totalMonthHours);
+    setSelectedMonth(firstDay.getTime());
+  };
 
   return (
     <>
       <NavBar/>
       <div className="pb-8 pl-8 pr-8">
         <h1 className='text-2xl text-center mb-5'>{worker.name}</h1>
+        <div className='flex items-center justify-center'>
+          <button className="bg-teal-800 hover:bg-teal-800 text-white font-bold text-center p-3 rounded" onClick={handleClick}>
+            Selectionné un mois
+          </button>
+        </div>
+        <div className='flex justify-center'>
+          {isOpen && (
+            <DatePicker 
+              selected={selectedDate} 
+              onChange={handleChange} 
+              dateFormat="MM/yyyy"
+              showMonthYearPicker
+              inline />
+          )}
+        </div>
       </div>
       <div className='grid grid-cols-3 mb-5'>
         <a onClick={() => loadMonthBefore()}><AiOutlineLeft className='float-left font-bold' size="3em"/></a>
-        <div className='text-center text-2xl font-bold'>{months[date.getMonth()]}</div>
+        <div className='text-center text-2xl font-bold'>{months[date.getMonth()] }  {date.getFullYear()}</div>
         <a onClick={() => loadMonthNext()}><AiOutlineRight className='float-right font-bold' size="3em" /></a>
       </div>
           { tableData[selectedMonth] == undefined ? 
@@ -208,17 +300,37 @@ export default function MyInformation() {
                 </thead>
                 <tbody>
               {tableData[selectedMonth].map((day, index) => (
-                <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                  <th className="font-medium text-gray-900 dark:text-white">
-                    {index+1}
-                  </th>
-                  <td className="">
-                    {day.hours}
-                  </td>
-                  <td className="">
-                    {day.message}
-                  </td>
-                </tr>
+                <>
+                { isWeekend(firstDayDay,index) ? 
+                  <>
+                    <tr key={index} className="bg-slate-500 border-b dark:bg-gray-800 dark:border-gray-700">
+                      <th className="font-medium text-gray-900 dark:text-white">
+                        {index+1}
+                      </th>
+                      <td className="">
+                        {day.hours}
+                      </td>
+                      <td className="">
+                        {day.message}
+                      </td>
+                    </tr>
+                  </>
+                : 
+                  <>
+                    <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                    <th className="font-medium text-gray-900 dark:text-white">
+                      {index+1}
+                    </th>
+                    <td className="">
+                      {day.hours}
+                    </td>
+                    <td className="">
+                      {day.message}
+                    </td>
+                  </tr>
+                  </>
+                }
+                </>
               ))
             }
             </tbody>
