@@ -20,6 +20,7 @@ import NavBar from '../../components/navBar';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { AiOutlineLeft,AiOutlineRight } from 'react-icons/ai';
+import ExcelJS from 'exceljs';
 
 export default function MyInformation() {
 
@@ -255,6 +256,72 @@ export default function MyInformation() {
     setSelectedMonth(firstDay.getTime());
   };
 
+  const telechargerExcel = () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Feuille 1');
+
+    let moisAnnee = months[date.getMonth()] +" "+ date.getFullYear(); 
+    worksheet.getCell('A1').value = "mois : ";
+    worksheet.getCell('B1').value = moisAnnee;
+    worksheet.getCell('A1').font = {bold : true};
+    worksheet.getCell('B1').font = {bold : true};
+
+    let index = 1;
+    tableData[selectedMonth].forEach(element => {
+      let case1Index = parseInt(index)+1;
+      let case2Index = parseInt(index)+1;
+      let case1 = "A" + case1Index;
+      let case2 = "B" + case2Index;
+
+      worksheet.getCell(case1).value = index;
+      worksheet.getCell(case2).value = element.hours;
+      if (isWeekend(firstDayDay, parseInt(index)-1)){
+        worksheet.getCell(case1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: '2A2727' }, // Couleur de fond (ici, rose)
+        };
+        worksheet.getCell(case2).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: '2A2727' }, // Couleur de fond (ici, rose)
+        };
+      }
+      index+=1;
+      
+    });
+
+    worksheet.getCell('A34').value = "TOTAL";
+    worksheet.getCell('B34').value = { formula: 'SUM(B2:B32)' };
+    worksheet.getCell('A34').font = {bold : true};
+    worksheet.getCell('B34').font = {bold : true};
+  
+    // Créez un objet Blob à partir du contenu Excel
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  
+      // Créez un lien d'ancrage pour le téléchargement du fichier
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'donnees_excel.xlsx';
+      a.style.display = 'none'; // Cachez le lien
+  
+      // Ajoutez le lien d'ancrage au DOM
+      document.body.appendChild(a);
+  
+      // Simulez un clic sur le lien pour déclencher le téléchargement
+      a.click();
+  
+      // Libérez l'URL et supprimez l'élément ancre après le téléchargement
+      window.URL.revokeObjectURL(a.href);
+      document.body.removeChild(a);
+    });
+  }
+
+  const redirectToHoursLog = () => {
+    
+  }
+
   return (
     <>
       <NavBar/>
@@ -305,7 +372,9 @@ export default function MyInformation() {
                   <>
                     <tr key={index} className="bg-slate-500 border-b dark:bg-gray-800 dark:border-gray-700">
                       <th className="font-medium text-gray-900 dark:text-white">
+                        <a className='underline' onClick={() =>redirectToHoursLog(index+1)}>
                         {index+1}
+                        </a>
                       </th>
                       <td className="">
                         {day.hours}
@@ -319,7 +388,9 @@ export default function MyInformation() {
                   <>
                     <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                     <th className="font-medium text-gray-900 dark:text-white">
-                      {index+1}
+                      <a className='underline' onClick={() =>redirectToHoursLog(index+1)}>
+                        {index+1}
+                      </a>
                     </th>
                     <td className="">
                       {day.hours}
@@ -336,7 +407,13 @@ export default function MyInformation() {
             </tbody>
           </table>
         }
-        <div className='w-full p-2 border-2 border-teal-800'>Total Heure :  {monthHours} </div>
+        <div className='w-full p-2 border-2 border-teal-800 mb-3'>Total Heure :  {monthHours} </div>
+        <div className='grid grid-cols-2 gap-4'>
+          <></>
+          <button onClick={telechargerExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-900'>
+            exporter en excel
+          </button>
+        </div>
     </>
   )
 }
