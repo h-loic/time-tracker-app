@@ -1,5 +1,6 @@
 import React from 'react';
 import { BiArrowBack } from 'react-icons/bi';
+import { AiFillHome } from 'react-icons/ai';
 import { useRouter } from 'next/navigation'
 
 export default function NavBar(){
@@ -11,6 +12,9 @@ export default function NavBar(){
             <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                 <a onClick={() => router.back()}>
                     <BiArrowBack size="2em"/>
+                </a>
+                <a onClick={() => router.push("/")}>
+                    <AiFillHome className='float-right' size="2em"/>
                 </a>
             </div>
         </nav>

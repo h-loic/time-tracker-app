@@ -53,7 +53,6 @@ export default function logHours({params : {ptimestamp}}){
               const document7 = await getDoc(docRef7);
               if (document7.exists()){
                 const data = document7.data();
-                console.log(data.loggedChantiers)
                 setloggedChantiers(data.loggedChantiers)
               }else{
                 alreadyExist = false
@@ -69,9 +68,7 @@ export default function logHours({params : {ptimestamp}}){
                 itemsArr.push({ ...doc.data(), id: doc.id });
               });
               setChantiers(itemsArr);
-              console.log(alreadyExist)
               if (!alreadyExist){
-                console.log("set not exist")
                 setloggedChantiers(oldArray => [...oldArray, {chantier : itemsArr[0].id, taskHours : chantierTaskHours}]);
               }
               return () => unsubscribe();

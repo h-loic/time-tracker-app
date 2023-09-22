@@ -58,10 +58,8 @@ export default function logHours(){
               const document7 = await getDoc(docRef7);
               if (document7.exists()){
                 const data = document7.data();
-                console.log(data.loggedChantiers)
                 setloggedChantiers(data.loggedChantiers)
               }else{
-                console.log("dac")
                 alreadyExist = false
               }
             }

@@ -21,9 +21,11 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { AiOutlineLeft,AiOutlineRight } from 'react-icons/ai';
 import ExcelJS from 'exceljs';
+import { useRouter } from 'next/navigation'
 
 export default function MyInformation() {
 
+  const router = useRouter();
 
   const [worker, setWorker] = useState({});
   const [monthHours,setMonthHours] = useState(0);
@@ -466,8 +468,11 @@ export default function MyInformation() {
     });
   }
 
-  const redirectToHoursLog = () => {
-    
+  const redirectToHoursLog = (index) => {
+    console.log(index)
+    let dayDate = new Date(date.getFullYear(),date.getMonth(),index)
+    console.log(tableData[selectedMonth])
+    router.push("logHours/" + dayDate.getTime());
   }
 
   return (
