@@ -58,7 +58,7 @@ export default function logHours({params : {ptimestamp}}){
                 alreadyExist = false
               }
             }
-            await check();
+            check();
 
             const chantiersRef = collection(db, 'chantiers');
             const q = query(chantiersRef, where("isFinished", "==", false));

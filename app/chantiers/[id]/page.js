@@ -4,10 +4,12 @@ import { doc,getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import {db} from '../../firebase'
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
+import NavBar from '../../../components/navBar';
 
 export default function Details({params : {id}}) {
     const [chantier, setChantier] = useState(null);
     const [workers, setWorkers] = useState([])
+    const [tasks, setTasks] = useState([])
   
     useEffect(() => {
       if (id) {
@@ -17,9 +19,18 @@ export default function Details({params : {id}}) {
           const docSnap = await getDoc(docRef);
           const a = docSnap.data();
           setChantier(a);
-          
         }
         fetchData();
+
+        const getTasks = async () => {
+          const query2 = await getDocs(collection(db,`chantiers/${id}/tasks`))
+          let tasks = []
+          query2.forEach(element => {
+            tasks.push(element.data())
+          })
+          setTasks(tasks);
+        }
+        getTasks();
 
         const getWorkers = async () => {
           const query = await getDocs(collection(db, `chantiers/${id}/workers`))
@@ -50,32 +61,122 @@ export default function Details({params : {id}}) {
   
     return (
       <>
+        <NavBar/>
       { chantier == null ?
         <div></div>
         :
         <div>
           <h1 className='text-4xl mb-4 p-4 text-center'>{ chantier.name}</h1>
           <div className='grid grid-cols-2 gap-4 mb-5 mt-5'>
-            <Link href={`/chantiers/edit/${id}` } type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">modifier le chantier</Link>
+            <Link href={`/chantiers/edit/${id}` } type="button" className="text-center text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800">modifier le chantier</Link>
               <button type="button" onClick={() => changeFinishedStatus()} 
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+              className="text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-blue-800">
                 {chantier.isFinished ? "rouvrir le chantier" : "terminer le chantier"}
                 </button>
           </div>
-          
-          <h2 className='text-2xl p-4'>Budget : {chantier.budget}</h2>
-          <h2 className='text-2xl p-4'>Nombre heures total : {chantier.totalHours}</h2>
-          <h2 className='text-2xl p-4'>Nombre heures restante : {chantier.availableHours}</h2>
-          <h2 className='text-2xl p-4'>Nombre heures utilisés : {chantier.usedHours}</h2>
-          <h2 className='text-2xl p-4'>Chantier Terminé : { chantier.isFinished ? "oui" : "non"}</h2>
-          <h2 className='text-2xl p-4'>Ouvrier ayant contribués :</h2>
-          <div className=''>
-            { workers.map((worker) => (
-              <Link href={`/`} key={worker.workerId}>
-                <div className="text-center text-slate-50 bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ worker.name } { worker.workedHours }</div>
-              </Link>
-            ))}
-        </div>
+
+          <table className="w-full border-collapse border border-slate-400 text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-white uppercase bg-teal-800 dark:bg-gray-700 p-3 dark:text-gray-400">
+                <tr>
+                  <th>
+                    Informations Générales 
+                  </th>
+                  <th>
+                  </th>
+                </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <th className=" font-medium text-gray-900 dark:text-white">
+                  Budget
+                </th>
+                <td className="text-left font-medium text-gray-900 dark:text-white">
+                  {chantier.budget}
+                </td>
+              </tr>
+              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <th className=" font-medium text-gray-900 dark:text-white">
+                  Nombre heures total
+                </th>
+                <td className="text-left font-medium text-gray-900 dark:text-white">
+                  {Math.round(chantier.totalHours)}
+                </td>
+              </tr>
+              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <th className=" font-medium text-gray-900 dark:text-white">
+                  Nombre heures restante
+                </th>
+                <td className="text-left font-medium text-gray-900 dark:text-white">
+                  {Math.round(chantier.availableHours)}
+                </td>
+              </tr>
+              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <th className=" font-medium text-gray-900 dark:text-white">
+                  Nombre heures utilisés
+                </th>
+                <td className="text-left font-medium text-gray-900 dark:text-white">
+                  {Math.round(chantier.totalHours)}
+                </td>
+              </tr>
+              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <th className=" font-medium text-gray-900 dark:text-white">
+                  Chantier Terminé
+                </th>
+                <td className="text-left font-medium text-gray-900 dark:text-white">
+                  { chantier.isFinished ? "oui" : "non"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <table className="mt-3 w-full border-collapse border border-slate-400 text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-white uppercase bg-teal-800 dark:bg-gray-700 p-3 dark:text-gray-400">
+                <tr>
+                  <th>
+                    Répartitions des heures
+                  </th>
+                  <th>
+                  </th>
+                </tr>
+            </thead>
+            <tbody>
+              { tasks.map((task) =>(
+                <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                  <th className="text-center font-medium text-gray-900 dark:text-white">
+                    {task.task}
+                  </th>
+                  <td className="text-left font-medium text-gray-900 dark:text-white">
+                    {task.hours}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <table className="mt-3 w-full border-collapse border border-slate-400 text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-white uppercase bg-teal-800 dark:bg-gray-700 p-3 dark:text-gray-400">
+                <tr>
+                  <th>
+                    ouvriers ayant participé
+                  </th>
+                  <th>
+                    nombre d'heures travaillé
+                  </th>
+                </tr>
+            </thead>
+            <tbody>
+              { workers.map((worker) =>(
+                <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                  <th className="text-center font-medium text-gray-900 dark:text-white">
+                    { worker.name }
+                  </th>
+                  <td className="text-left font-medium text-gray-900 dark:text-white">
+                  { worker.workedHours }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       }
     </>

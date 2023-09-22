@@ -14,6 +14,9 @@ import {
   doc,
 } from 'firebase/firestore';
 import {db} from '../firebase'
+import NavBar from '../../components/navBar';
+import {AiOutlinePlus} from 'react-icons/ai';
+import {BsFillTrashFill} from 'react-icons/bs';
 
 export default function Chantiers() {
 
@@ -64,24 +67,29 @@ export default function Chantiers() {
 
   return (
     <>
-        <h1 className='text-4xl p-4 text-center'>Baustellen</h1>
+      <NavBar/>
+      <h1 className='text-4xl p-4 text-center mb-3'>Baustellen</h1>
 
-        <Link href="addChantier" type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Ajouter un chantier</Link>
+      <Link href="addChantier" type="button" className="rounded inline-flex items-center text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm p-2 mr-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800">
+        <AiOutlinePlus className="mr-2"/><div>Nouveau Chantier</div>
+      </Link>
 
-        <div className='grid grid-cols-3 gap-4 mb-5 mt-5'>
-          <button onClick={() => selectShowCondition("all")} className="bg-blue-700 text-slate-50 p-2 rounded-lg justify-center">Tous</button>
-          <button onClick={() => selectShowCondition("notFinished")} className="bg-blue-700 text-slate-50 p-2 rounded-lg justify-center">En cours</button>
-          <button onClick={() => selectShowCondition("Finished")} className="bg-blue-700 text-slate-50 p-2 rounded-lg justify-center">Terminé</button>
-        </div>
-
-        <div className=''>
-            { chantiersShow.map((chantier) => (
-              <Link href={`/chantiers/${chantier.id}`} key={chantier.id}>
-                <div className="text-center text-slate-50 bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ chantier.name }</div>
-              </Link>
-            ))}
-        </div>
-      </>
+      <div className='grid grid-cols-3 gap-4 mb-2 mt-3'>
+        <button onClick={() => selectShowCondition("all")} className="bg-teal-700 text-slate-50 p-1 rounded-lg justify-center">Tous</button>
+        <button onClick={() => selectShowCondition("notFinished")} className="bg-teal-700 text-slate-50 p-1 rounded-lg justify-center">En cours</button>
+        <button onClick={() => selectShowCondition("Finished")} className="bg-teal-700 text-slate-50 p-1 rounded-lg justify-center">Terminé</button>
+      </div>
+      
+      <div className=''>
+          { chantiersShow.map((chantier) => (
+            <Link href={`/chantiers/${chantier.id}`} key={chantier.id}>
+              <div className="text-left text-slate-900 p-1.5 font-bold bg-slate-400 p-4 rounded-lg mb-1.5 mt-1.5">
+                { chantier.name }
+              </div>
+            </Link>
+          ))}
+      </div>
+    </>
   )
 }
 

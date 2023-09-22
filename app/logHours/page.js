@@ -106,9 +106,9 @@ export default function logHours(){
               const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
               const document5 = await getDoc(docRef5);
               if (document5.exists()){
-                  await updateDoc(docRef5, {"hours" : increment(task.hours)})
+                  await updateDoc(docRef5, {"hours" : task.hours, "task" : task.task})
               }else{
-                  await setDoc(docRef5, {"hours": task.hours})
+                  await setDoc(docRef5, {"hours": task.hours, "task" : task.task})
               }
             });
           });
