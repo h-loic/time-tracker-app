@@ -239,13 +239,8 @@ export default function logHours(){
     }
 
     const handleDateChange = (currentDate) => {
-      let annee = currentDate.getFullYear();
-      let mois = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
-      let jour = currentDate.getDate().toString().padStart(2, '0');
-      let formatDate = `${annee}-${mois}-${jour} `;
-      let parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
-      let timestamp = getTime(parsedDate);
-      router.push("/logHours/"+ timestamp)
+      setDate(currentDate);
+      router.push("/logHours/"+ currentDate.getTime())
     }
 
     return(
