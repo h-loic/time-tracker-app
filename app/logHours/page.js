@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
-import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc } from 'firebase/firestore'
+import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc,getDocs } from 'firebase/firestore'
 import {db} from '../firebase'
 import { useRouter } from 'next/navigation'
 import DatePicker from "react-datepicker";
@@ -36,7 +36,9 @@ export default function logHours(){
     const [worker, setWorker] = useState(undefined);
     const [chantiers, setChantiers] = useState([]);
 
-    const [loaded,setLoaded] = useState(false)
+    const [loaded,setLoaded] = useState(false);
+
+    const [alreadyWorked, setAlreadyWorked] = useState(false);
 
     const [loggedChantiers, setloggedChantiers] = useState([]); 
 
@@ -57,6 +59,7 @@ export default function logHours(){
               const docRef7 = doc(db, `workers/${workerId}/workedDay/${timestamp}`)
               const document7 = await getDoc(docRef7);
               if (document7.exists()){
+                setAlreadyWorked(true)
                 const data = document7.data();
                 setloggedChantiers(data.loggedChantiers)
               }else{
@@ -97,8 +100,8 @@ export default function logHours(){
         }
       }, [session]);
 
-    const storeHours = async () => {
-        try{
+    const storeNewHours = async () => {
+      try{
           let totalHours = 0;
           loggedChantiers.forEach(async chantier => {
             chantier.taskHours.forEach(async task => {
@@ -181,6 +184,121 @@ export default function logHours(){
             progress: undefined,
             theme: "light",
             });
+        }
+    }
+
+    const updateStoredHours = async () => {
+      try{
+        let totalHours = 0;
+        let totalHoursDiff = [];
+
+        loggedChantiers.forEach(async chantier => {
+          let taskRef = collection(db, `chantiers/${chantier.chantier}/tasks`);
+          let q = query(taskRef);
+          let querySnapshot = await getDocs(q);
+          let oldTasks = []
+          querySnapshot.forEach((task) =>{
+            oldTasks.push(task.data());
+          })
+          let chantierHoursDiff = 0;
+
+          chantier.taskHours.forEach(async task => {
+            let oldTaskHours = oldTasks.find(item => item.task === task.task).hours;
+            let hoursDiff =  task.hours - oldTaskHours;
+            chantierHoursDiff += hoursDiff;
+            const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
+            const document5 = await getDoc(docRef5);
+            if (document5.exists()){
+                await updateDoc(docRef5, {"hours" : increment(hoursDiff), "task" : task.task})
+            }
+          });
+          totalHoursDiff.push(chantierHoursDiff);
+        });
+
+
+        let chantierIndex = 0;
+        for (const chantier of loggedChantiers){
+
+          if (totalHoursDiff[chantierIndex] != undefined){
+            const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
+            const document = await getDoc(docRef1);
+            if (document.exists()){
+                await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHoursDiff[chantierIndex])})
+            }
+
+            const docRef2 = doc(db, `workers`,worker.id)
+            updateDoc(docRef2, {
+                totalHours : increment(totalHoursDiff[chantierIndex])
+            })
+          }
+
+
+          /// STOP
+
+          const docRef3 = doc(db,"chantiers", chantier.chantier)
+          updateDoc(docRef3,{
+              availableHours : increment(-totalHours),
+              usedHours : increment(totalHours)
+          })
+
+          const docRef4 = doc(db, `chantiers/${chantier.chantier}/workers/${worker.id}`)
+          const document4 = await getDoc(docRef4);
+          if (document4.exists()){
+              await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
+          }else{
+              await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHours})
+          }
+
+          const annee = date.getFullYear();
+          const mois = (date.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
+          const jour = date.getDate().toString().padStart(2, '0');
+          const formatDate = `${annee}-${mois}-${jour} `;
+
+          const parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
+
+          // Obtenez le timestamp (en millisecondes)
+          const timestamp = getTime(parsedDate);
+
+          const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
+          const document6 = await getDoc(docRef6);
+          if (document6.exists()){
+            await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+          }else{
+            await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+          }
+          chantierIndex++;
+        }
+
+        toast.success('vos heures ont bien été enregistrés !', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+        }catch(e){
+          console.log(e);
+          toast.error('une erreur c est produite !', {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+        });
+      }
+    }
+
+    const storeHours = async () => {
+        if (alreadyWorked){
+          updateStoredHours();
+        }else {
+          storeNewHours();
         }
     };
 
