@@ -44,6 +44,8 @@ export default function logHours(){
 
     const [oldTasksByChantier, setOldTasksByChantier] = useState([]); 
 
+    const [currentTimestamp,setCurrentTimestamp] = useState("")
+
     function deepCopy(obj) {
       if (obj === null || typeof obj !== 'object') {
         // Si l'objet est une valeur primitive ou null, retournez-le tel quel
@@ -82,6 +84,7 @@ export default function logHours(){
             let formatDate = `${annee}-${mois}-${jour} `;
             let parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
             let timestamp = getTime(parsedDate);
+            setCurrentTimestamp(timestamp)
             const check = async () =>{
               const docRef7 = doc(db, `workers/${workerId}/workedDay/${timestamp}`)
               const document7 = await getDoc(docRef7);
@@ -221,7 +224,6 @@ export default function logHours(){
         let totalHoursDiff = [];
 
         await Promise.all(loggedChantiers.map(async chantier => {
-          console.log(oldTasksByChantier)
           let oldTasks = []
           let singleOldTaskByChantier = oldTasksByChantier.find(item => item.chantier == chantier.chantier);
           if (singleOldTaskByChantier != undefined){
@@ -246,7 +248,6 @@ export default function logHours(){
             chantierHoursDiff += hoursDiff;
             const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
             const document5 = await getDoc(docRef5);
-            console.log(task.task + " : " + hoursDiff)
             if (document5.exists()){
               await updateDoc(docRef5, {"hours" : increment(hoursDiff), "task" : task.task})
             }else{
@@ -378,8 +379,67 @@ export default function logHours(){
 
     }
 
-    const removeTask = (chantierIndex,taskIndex) => {
+    const removeTask = async (chantierIndex,taskIndex, loggedChantier) => {
+
+      console.log(oldTasksByChantier)
+      let singleOldTaskByChantier = oldTasksByChantier.find(item => item.chantier ==  loggedChantier.chantier);
+      let taskExist = false;
+      let taskToDeleteValue;
+      if (singleOldTaskByChantier != undefined){
+        singleOldTaskByChantier.taskHours.forEach(task =>{
+          if (task.task == loggedChantier.taskHours[taskIndex].task){
+            taskExist = true;
+            taskToDeleteValue = task.hours
+          }
+        })
+      }
+
+      if (taskExist){
+        const docRef5 = doc(db, `chantiers/${loggedChantier.chantier}/tasks/${loggedChantier.taskHours[taskIndex].task}`)
+        const document5 = await getDoc(docRef5);
+        if (document5.exists()){
+          await updateDoc(docRef5, {"hours" : 0, "task" : loggedChantier.taskHours[taskIndex].task})
+        }else{
+          await setDoc(docRef5, {"hours" : 0, "task" : loggedChantier.taskHours[taskIndex].task})
+        }
+
+        const docRef1 = doc(db, `workers/${worker.id}/chantiers/${loggedChantier.chantier}`)
+        const document = await getDoc(docRef1);
+        if (document.exists()){
+          await updateDoc(docRef1, {"chantierId" : loggedChantier.chantier,"chantierHours" : increment(-taskToDeleteValue)})
+        }else{
+          await setDoc(docRef1, {"chantierId" : loggedChantier.chantier,"chantierHours" : increment(-taskToDeleteValue)})
+        }
+
+        const docRef2 = doc(db, `workers`,worker.id)
+        updateDoc(docRef2, {
+            totalHours : increment(-taskToDeleteValue)
+        })
+
+        const docRef3 = doc(db,"chantiers", loggedChantier.chantier)
+        updateDoc(docRef3,{
+            availableHours : increment(taskToDeleteValue),
+            usedHours : increment(-taskToDeleteValue)
+        })
+
+        const docRef4 = doc(db, `chantiers/${loggedChantier.chantier}/workers/${worker.id}`)
+        const document4 = await getDoc(docRef4);
+        if (document4.exists()){
+            await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(-taskToDeleteValue)})
+        }else{
+            await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(-taskToDeleteValue)})
+        }
+      }
       loggedChantiers[chantierIndex].taskHours.splice(taskIndex,1);
+
+      if (taskExist){      
+        const docRef6 = doc(db, `workers/${worker.id}/workedDay/${currentTimestamp}`)
+        const document6 = await getDoc(docRef6);
+        if (document6.exists()){
+          await updateDoc(docRef6, {"hours" : increment(-taskToDeleteValue), "loggedChantiers" : loggedChantiers })
+        }
+      }
+
       setloggedChantiers(oldArray => [...loggedChantiers]);
     }
 
@@ -488,7 +548,7 @@ export default function logHours(){
                                 onChange={(e) => handleNumberHoursChange(e, index, taskIndex)} 
                                 type="number" name="numberOfHours" className="rounded-r-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
                               </div>
-                              <a onClick={() => removeTask(index,taskIndex)}
+                              <a onClick={() => removeTask(index,taskIndex,loggedChantier)}
                                 type="button" className="flex items-center justify-center h-full focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
                                 <FaTrashAlt size="1.2em" color="white"/>
                                 </a>
