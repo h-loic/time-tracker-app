@@ -192,7 +192,7 @@ export default function logHours(){
         let totalHours = 0;
         let totalHoursDiff = [];
 
-        loggedChantiers.forEach(async chantier => {
+        await Promise.all(loggedChantiers.map(async chantier => {
           let taskRef = collection(db, `chantiers/${chantier.chantier}/tasks`);
           let q = query(taskRef);
           let querySnapshot = await getDocs(q);
@@ -201,7 +201,6 @@ export default function logHours(){
             oldTasks.push(task.data());
           })
           let chantierHoursDiff = 0;
-
           chantier.taskHours.forEach(async task => {
             let oldTaskHours = oldTasks.find(item => item.task === task.task).hours;
             let hoursDiff =  task.hours - oldTaskHours;
@@ -213,12 +212,11 @@ export default function logHours(){
             }
           });
           totalHoursDiff.push(chantierHoursDiff);
-        });
-
+        }));
 
         let chantierIndex = 0;
         for (const chantier of loggedChantiers){
-
+          console.log(totalHoursDiff[chantierIndex])
           if (totalHoursDiff[chantierIndex] != undefined){
             const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
             const document = await getDoc(docRef1);
@@ -230,23 +228,20 @@ export default function logHours(){
             updateDoc(docRef2, {
                 totalHours : increment(totalHoursDiff[chantierIndex])
             })
+
+            const docRef3 = doc(db,"chantiers", chantier.chantier)
+            updateDoc(docRef3,{
+                availableHours : increment(-totalHoursDiff[chantierIndex]),
+                usedHours : increment(totalHoursDiff[chantierIndex])
+            })
           }
-
-
-          /// STOP
-
-          const docRef3 = doc(db,"chantiers", chantier.chantier)
-          updateDoc(docRef3,{
-              availableHours : increment(-totalHours),
-              usedHours : increment(totalHours)
-          })
 
           const docRef4 = doc(db, `chantiers/${chantier.chantier}/workers/${worker.id}`)
           const document4 = await getDoc(docRef4);
           if (document4.exists()){
-              await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
+              await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHoursDiff[chantierIndex])})
           }else{
-              await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHours})
+              await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHoursDiff[chantierIndex]})
           }
 
           const annee = date.getFullYear();
@@ -262,9 +257,9 @@ export default function logHours(){
           const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
           const document6 = await getDoc(docRef6);
           if (document6.exists()){
-            await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+            await updateDoc(docRef6, {"hours" : totalHoursDiff[chantierIndex], "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
           }else{
-            await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+            await setDoc(docRef6, {"hours" : totalHoursDiff[chantierIndex], "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
           }
           chantierIndex++;
         }
