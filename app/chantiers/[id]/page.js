@@ -1,12 +1,16 @@
 'use client';
 import { collection } from "firebase/firestore";
-import { doc,getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import { doc,getDoc, getDocs, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import {db} from '../../firebase'
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
 import NavBar from '../../../components/navBar';
+import { useRouter } from 'next/navigation'
 
 export default function Details({params : {id}}) {
+
+    const router = useRouter();
+
     const [chantier, setChantier] = useState(null);
     const [workers, setWorkers] = useState([])
     const [tasks, setTasks] = useState([])
@@ -58,6 +62,12 @@ export default function Details({params : {id}}) {
         isFinished : !chantier.isFinished
       })
     };
+
+    
+    const deleteChantier = () => {
+      const docRef = doc(db, "chantiers", id);
+      deleteDoc(docRef).then(() => router.back())
+    }
   
     return (
       <>
@@ -115,7 +125,7 @@ export default function Details({params : {id}}) {
                   Nombre heures utilisés
                 </th>
                 <td className="text-left font-medium text-gray-900 dark:text-white">
-                  {Math.round(chantier.totalHours)}
+                  {Math.round(chantier.usedHours)}
                 </td>
               </tr>
               <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
@@ -177,6 +187,10 @@ export default function Details({params : {id}}) {
               ))}
             </tbody>
           </table>
+
+          <button onClick={() => deleteChantier()} className="text-center absolute bottom-0 mt-5 mb-5 bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded">
+            supprimer le chantier
+          </button>
         </div>
       }
     </>

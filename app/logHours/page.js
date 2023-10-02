@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
-import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc,getDocs } from 'firebase/firestore'
 import {db} from '../firebase'
+import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc, getDocs } from 'firebase/firestore'
 import { useRouter } from 'next/navigation'
 import DatePicker from "react-datepicker";
 import { ToastContainer, toast } from 'react-toastify';
@@ -42,6 +42,33 @@ export default function logHours(){
 
     const [loggedChantiers, setloggedChantiers] = useState([]); 
 
+    const [oldTasksByChantier, setOldTasksByChantier] = useState([]); 
+
+    function deepCopy(obj) {
+      if (obj === null || typeof obj !== 'object') {
+        // Si l'objet est une valeur primitive ou null, retournez-le tel quel
+        return obj;
+      }
+    
+      if (Array.isArray(obj)) {
+        // Si l'objet est un tableau, créez une copie profonde du tableau
+        const copy = [];
+        for (let i = 0; i < obj.length; i++) {
+          copy[i] = deepCopy(obj[i]);
+        }
+        return copy;
+      }
+    
+      // Si l'objet est un objet ordinaire, créez une copie profonde de ses propriétés
+      const copy = {};
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          copy[key] = deepCopy(obj[key]);
+        }
+      }
+      return copy;
+    }
+
       useEffect(() => {
         const setData = (workerId) =>{
           if(chantiers.length == 0 && !loaded){
@@ -62,6 +89,7 @@ export default function logHours(){
                 setAlreadyWorked(true)
                 const data = document7.data();
                 setloggedChantiers(data.loggedChantiers)
+                setOldTasksByChantier(deepCopy(data.loggedChantiers))
               }else{
                 alreadyExist = false
               }
@@ -109,9 +137,9 @@ export default function logHours(){
               const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
               const document5 = await getDoc(docRef5);
               if (document5.exists()){
-                  await updateDoc(docRef5, {"hours" : task.hours, "task" : task.task})
+                  await updateDoc(docRef5, {"hours" : increment(parseFloat(task.hours)), "task" : task.task})
               }else{
-                  await setDoc(docRef5, {"hours": task.hours, "task" : task.task})
+                  await setDoc(docRef5, {"hours": increment(parseFloat(task.hours)), "task" : task.task})
               }
             });
           });
@@ -122,7 +150,7 @@ export default function logHours(){
             if (document.exists()){
                 await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
             }else{
-                await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : totalHours})
+                await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
             }
 
             const docRef2 = doc(db, `workers`,worker.id)
@@ -193,22 +221,36 @@ export default function logHours(){
         let totalHoursDiff = [];
 
         await Promise.all(loggedChantiers.map(async chantier => {
-          let taskRef = collection(db, `chantiers/${chantier.chantier}/tasks`);
-          let q = query(taskRef);
-          let querySnapshot = await getDocs(q);
+          console.log(oldTasksByChantier)
           let oldTasks = []
-          querySnapshot.forEach((task) =>{
-            oldTasks.push(task.data());
-          })
+          let singleOldTaskByChantier = oldTasksByChantier.find(item => item.chantier == chantier.chantier);
+          if (singleOldTaskByChantier != undefined){
+            oldTasks = singleOldTaskByChantier.taskHours
+          }
+          console.log(oldTasks)
           let chantierHoursDiff = 0;
           chantier.taskHours.forEach(async task => {
-            let oldTaskHours = oldTasks.find(item => item.task === task.task).hours;
+            totalHours+= parseFloat(task.hours)
+            let oldTaskHours;
+            if (oldTasks.length != 0){
+              let oldTaskHoursTemp = oldTasks.find(item => item.task === task.task);
+              if (oldTaskHoursTemp != undefined){
+                oldTaskHours = oldTaskHoursTemp.hours
+              }else {
+                oldTaskHours = 0;
+              }
+            }else{
+              oldTaskHours = 0;
+            }
             let hoursDiff =  task.hours - oldTaskHours;
             chantierHoursDiff += hoursDiff;
             const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
             const document5 = await getDoc(docRef5);
+            console.log(task.task + " : " + hoursDiff)
             if (document5.exists()){
-                await updateDoc(docRef5, {"hours" : increment(hoursDiff), "task" : task.task})
+              await updateDoc(docRef5, {"hours" : increment(hoursDiff), "task" : task.task})
+            }else{
+              await setDoc(docRef5, {"hours" : increment(hoursDiff), "task" : task.task})
             }
           });
           totalHoursDiff.push(chantierHoursDiff);
@@ -216,12 +258,13 @@ export default function logHours(){
 
         let chantierIndex = 0;
         for (const chantier of loggedChantiers){
-          console.log(totalHoursDiff[chantierIndex])
           if (totalHoursDiff[chantierIndex] != undefined){
             const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
             const document = await getDoc(docRef1);
             if (document.exists()){
-                await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHoursDiff[chantierIndex])})
+              await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHoursDiff[chantierIndex])})
+            }else{
+              await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHoursDiff[chantierIndex])})
             }
 
             const docRef2 = doc(db, `workers`,worker.id)
@@ -257,9 +300,9 @@ export default function logHours(){
           const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
           const document6 = await getDoc(docRef6);
           if (document6.exists()){
-            await updateDoc(docRef6, {"hours" : totalHoursDiff[chantierIndex], "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+            await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
           }else{
-            await setDoc(docRef6, {"hours" : totalHoursDiff[chantierIndex], "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+            await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
           }
           chantierIndex++;
         }

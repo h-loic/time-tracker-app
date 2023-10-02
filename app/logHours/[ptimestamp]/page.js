@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link'
 import { forEachChild } from 'typescript';
-import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc } from 'firebase/firestore'
+import { onSnapshot,collection, addDoc, query, where, updateDoc, doc, arrayUnion, increment, setDoc, getDoc, getDocs } from 'firebase/firestore'
 import {db} from '../../firebase'
 import { useRouter } from 'next/navigation'
 import DatePicker from "react-datepicker";
@@ -38,27 +38,62 @@ export default function logHours({params : {ptimestamp}}){
 
     const [loaded,setLoaded] = useState(false)
 
+    const [alreadyWorked, setAlreadyWorked] = useState(false);
+
     const [loggedChantiers, setloggedChantiers] = useState([]); 
 
+    const [oldTasksByChantier, setOldTasksByChantier] = useState([]); 
+
+    function deepCopy(obj) {
+      if (obj === null || typeof obj !== 'object') {
+        // Si l'objet est une valeur primitive ou null, retournez-le tel quel
+        return obj;
+      }
+    
+      if (Array.isArray(obj)) {
+        // Si l'objet est un tableau, créez une copie profonde du tableau
+        const copy = [];
+        for (let i = 0; i < obj.length; i++) {
+          copy[i] = deepCopy(obj[i]);
+        }
+        return copy;
+      }
+    
+      // Si l'objet est un objet ordinaire, créez une copie profonde de ses propriétés
+      const copy = {};
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          copy[key] = deepCopy(obj[key]);
+        }
+      }
+      return copy;
+    }
 
       useEffect(() => {
-        const setData = async (workerId) =>{
+        setAlreadyWorked(false)
+        const setData = (workerId) =>{
           if(chantiers.length == 0 && !loaded){
             setLoaded(true)
-            var alreadyExist = true;
+
+            let alreadyExist = true;
             let timestamp = ptimestamp;
-            //setDate(new Date(ptimestamp))
             const check = async () =>{
               const docRef7 = doc(db, `workers/${workerId}/workedDay/${timestamp}`)
               const document7 = await getDoc(docRef7);
+              console.log("okok")
               if (document7.exists()){
+                console.log("dac")
+                setAlreadyWorked(true)
                 const data = document7.data();
+                console.log(data)
                 setloggedChantiers(data.loggedChantiers)
+                setOldTasksByChantier(deepCopy(data.loggedChantiers))
               }else{
                 alreadyExist = false
               }
             }
             check();
+
 
             const chantiersRef = collection(db, 'chantiers');
             const q = query(chantiersRef, where("isFinished", "==", false));
@@ -91,68 +126,186 @@ export default function logHours({params : {ptimestamp}}){
         }
       }, [session]);
 
-    const storeHours = async () => {
+      const storeNewHours = async () => {
+        try{
+            let totalHours = 0;
+            loggedChantiers.forEach(async chantier => {
+              chantier.taskHours.forEach(async task => {
+                totalHours+= parseFloat(task.hours)
+                const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
+                const document5 = await getDoc(docRef5);
+                if (document5.exists()){
+                    await updateDoc(docRef5, {"hours" : increment(parseFloat(task.hours)), "task" : task.task})
+                }else{
+                    await setDoc(docRef5, {"hours": increment(parseFloat(task.hours)), "task" : task.task})
+                }
+              });
+            });
+  
+            loggedChantiers.forEach(async chantier => {
+              const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
+              const document = await getDoc(docRef1);
+              if (document.exists()){
+                  await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
+              }else{
+                  await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
+              }
+  
+              const docRef2 = doc(db, `workers`,worker.id)
+              updateDoc(docRef2, {
+                  totalHours : increment(totalHours)
+              })
+      
+              const docRef3 = doc(db,"chantiers", chantier.chantier)
+              updateDoc(docRef3,{
+                  availableHours : increment(-totalHours),
+                  usedHours : increment(totalHours)
+              })
+      
+              const docRef4 = doc(db, `chantiers/${chantier.chantier}/workers/${worker.id}`)
+              const document4 = await getDoc(docRef4);
+              if (document4.exists()){
+                  await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
+              }else{
+                  await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
+              }
+  
+              const annee = date.getFullYear();
+              const mois = (date.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
+              const jour = date.getDate().toString().padStart(2, '0');
+              const formatDate = `${annee}-${mois}-${jour} `;
+  
+              const parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
+  
+              // Obtenez le timestamp (en millisecondes)
+              const timestamp = getTime(parsedDate);
+  
+              const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
+              const document6 = await getDoc(docRef6);
+              if (document6.exists()){
+                  await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+              }else{
+                  await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+              }
+            })
+            toast.success('vos heures ont bien été enregistrés !', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              });
+          }catch(e){
+            console.log(e);
+            toast.error('une erreur c est produite !', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              });
+          }
+      }
+
+      const updateStoredHours = async () => {
+        console.log("UPDATE")
         try{
           let totalHours = 0;
-          loggedChantiers.forEach(async chantier => {
+          let totalHoursDiff = [];
+  
+          await Promise.all(loggedChantiers.map(async chantier => {
+            console.log(oldTasksByChantier)
+            let oldTasks = []
+            let singleOldTaskByChantier = oldTasksByChantier.find(item => item.chantier == chantier.chantier);
+            if (singleOldTaskByChantier != undefined){
+              oldTasks = singleOldTaskByChantier.taskHours
+            }
+            console.log(oldTasks)
+            let chantierHoursDiff = 0;
             chantier.taskHours.forEach(async task => {
               totalHours+= parseFloat(task.hours)
+              let oldTaskHours;
+              if (oldTasks.length != 0){
+                let oldTaskHoursTemp = oldTasks.find(item => item.task === task.task);
+                if (oldTaskHoursTemp != undefined){
+                  oldTaskHours = oldTaskHoursTemp.hours
+                }else {
+                  oldTaskHours = 0;
+                }
+              }else{
+                oldTaskHours = 0;
+              }
+              let hoursDiff =  task.hours - oldTaskHours;
+              chantierHoursDiff += hoursDiff;
               const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
               const document5 = await getDoc(docRef5);
+              console.log(task.task + " : " + hoursDiff)
               if (document5.exists()){
-                  await updateDoc(docRef5, {"hours" : increment(task.hours)})
+                await updateDoc(docRef5, {"hours" : increment(hoursDiff), "task" : task.task})
               }else{
-                  await setDoc(docRef5, {"hours": task.hours})
+                await setDoc(docRef5, {"hours" : increment(hoursDiff), "task" : task.task})
               }
             });
-          });
-
-          loggedChantiers.forEach(async chantier => {
-            const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
-            const document = await getDoc(docRef1);
-            if (document.exists()){
-                await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
-            }else{
-                await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : totalHours})
+            totalHoursDiff.push(chantierHoursDiff);
+          }));
+  
+          let chantierIndex = 0;
+          for (const chantier of loggedChantiers){
+            if (totalHoursDiff[chantierIndex] != undefined){
+              const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
+              const document = await getDoc(docRef1);
+              if (document.exists()){
+                await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHoursDiff[chantierIndex])})
+              }else{
+                await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHoursDiff[chantierIndex])})
+              }
+  
+              const docRef2 = doc(db, `workers`,worker.id)
+              updateDoc(docRef2, {
+                  totalHours : increment(totalHoursDiff[chantierIndex])
+              })
+  
+              const docRef3 = doc(db,"chantiers", chantier.chantier)
+              updateDoc(docRef3,{
+                  availableHours : increment(-totalHoursDiff[chantierIndex]),
+                  usedHours : increment(totalHoursDiff[chantierIndex])
+              })
             }
-
-            const docRef2 = doc(db, `workers`,worker.id)
-            updateDoc(docRef2, {
-                totalHours : increment(totalHours)
-            })
-    
-            const docRef3 = doc(db,"chantiers", chantier.chantier)
-            updateDoc(docRef3,{
-                availableHours : increment(-totalHours),
-                usedHours : increment(totalHours)
-            })
-    
+  
             const docRef4 = doc(db, `chantiers/${chantier.chantier}/workers/${worker.id}`)
             const document4 = await getDoc(docRef4);
             if (document4.exists()){
-                await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
+                await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHoursDiff[chantierIndex])})
             }else{
-                await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHours})
+                await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHoursDiff[chantierIndex]})
             }
-
+  
             const annee = date.getFullYear();
             const mois = (date.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
             const jour = date.getDate().toString().padStart(2, '0');
             const formatDate = `${annee}-${mois}-${jour} `;
-
+  
             const parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
-
+  
             // Obtenez le timestamp (en millisecondes)
             const timestamp = getTime(parsedDate);
-
+  
             const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
             const document6 = await getDoc(docRef6);
             if (document6.exists()){
-                await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+              await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
             }else{
-                await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+              await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
             }
-          })
+            chantierIndex++;
+          }
+  
           toast.success('vos heures ont bien été enregistrés !', {
             position: "top-center",
             autoClose: 5000,
@@ -163,20 +316,28 @@ export default function logHours({params : {ptimestamp}}){
             progress: undefined,
             theme: "light",
             });
-        }catch(e){
-          console.log(e);
-          toast.error('une erreur c est produite !', {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-            });
+          }catch(e){
+            console.log(e);
+            toast.error('une erreur c est produite !', {
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+          });
         }
-    };
+      }
+  
+      const storeHours = async () => {
+          if (alreadyWorked){
+            updateStoredHours();
+          }else {
+            storeNewHours();
+          }
+      };
 
     const handleChantierChange = (oldChantierIndex, e) => {
       const { value } = e.target;

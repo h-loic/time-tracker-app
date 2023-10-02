@@ -38,7 +38,7 @@ export default function addChantier() {
             workerContribution : {},
             isFinished : false
         })
-        router.push('/')
+        router.back();
       };
 
     const handleInputChange = (event) => {
