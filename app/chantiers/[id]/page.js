@@ -75,7 +75,7 @@ export default function Details({params : {id}}) {
       { chantier == null ?
         <div></div>
         :
-        <div>
+        <div className="">
           <h1 className='text-4xl mb-4 p-4 text-center'>{ chantier.name}</h1>
           <div className='grid grid-cols-2 gap-4 mb-5 mt-5'>
             <Link href={`/chantiers/edit/${id}` } type="button" className="text-center text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800">modifier le chantier</Link>
@@ -96,6 +96,22 @@ export default function Details({params : {id}}) {
                 </tr>
             </thead>
             <tbody>
+              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <th className=" font-medium text-gray-900 dark:text-white">
+                  Adresse
+                </th>
+                <td className="text-left font-medium text-gray-900 dark:text-white">
+                  {chantier.address}
+                </td>
+              </tr>
+              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <th className=" font-medium text-gray-900 dark:text-white">
+                  Quoi
+                </th>
+                <td className="text-left font-medium text-gray-900 dark:text-white">
+                  {chantier.type}
+                </td>
+              </tr>
               <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
                 <th className=" font-medium text-gray-900 dark:text-white">
                   Budget
@@ -188,7 +204,7 @@ export default function Details({params : {id}}) {
             </tbody>
           </table>
 
-          <button onClick={() => deleteChantier()} className="text-center absolute bottom-0 mt-5 mb-5 bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded">
+          <button onClick={() => deleteChantier()} className="text-center bottom-0 mt-5 mb-5 bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded">
             supprimer le chantier
           </button>
         </div>

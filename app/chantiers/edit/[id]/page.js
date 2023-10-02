@@ -5,6 +5,7 @@ import {db} from '../../../firebase'
 import { useEffect, useState } from 'react';
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import NavBar from '../../../../components/navBar';
 
 export default function EditChantier({params : {id}}) {
     const router = useRouter();
@@ -56,6 +57,7 @@ export default function EditChantier({params : {id}}) {
   
     return (
         <>
+            <NavBar/>
             { chantier == null ?
                 <div></div>
                 :
@@ -89,7 +91,7 @@ export default function EditChantier({params : {id}}) {
                             <option value={true}>oui</option>
                         </select>
                     </div>
-                    <button type="submit" className="mb-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Modifier</button>
+                    <button type="submit" className="mb-4 text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-teal-600 dark:hover:bg-teal-700 dark:focus:ring-teal-800">Modifier</button>
                     <button type="button" onClick={() => router.back()} className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-red-800">Annuler</button>
                 </form>
                 </div>
