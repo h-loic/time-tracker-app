@@ -340,6 +340,7 @@ export default function logHours({params : {ptimestamp}}){
           }else {
             storeNewHours();
           }
+          setOldTasksByChantier(deepCopy(loggedChantiers))
       };
 
     const handleChantierChange = (oldChantierIndex, e) => {
@@ -381,8 +382,6 @@ export default function logHours({params : {ptimestamp}}){
     }
 
     const removeTask = async (chantierIndex,taskIndex, loggedChantier) => {
-
-      console.log(oldTasksByChantier)
       let singleOldTaskByChantier = oldTasksByChantier.find(item => item.chantier ==  loggedChantier.chantier);
       let taskExist = false;
       let taskToDeleteValue;
@@ -462,6 +461,7 @@ export default function logHours({params : {ptimestamp}}){
       let timestamp = getTime(parsedDate);
       router.push("/logHours/"+ timestamp)
     }
+
 
     return(
         <>

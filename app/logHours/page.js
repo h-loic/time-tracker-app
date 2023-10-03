@@ -219,6 +219,7 @@ export default function logHours(){
     }
 
     const updateStoredHours = async () => {
+      console.log(loggedChantiers)
       try{
         let totalHours = 0;
         let totalHoursDiff = [];
@@ -229,7 +230,6 @@ export default function logHours(){
           if (singleOldTaskByChantier != undefined){
             oldTasks = singleOldTaskByChantier.taskHours
           }
-          console.log(oldTasks)
           let chantierHoursDiff = 0;
           chantier.taskHours.forEach(async task => {
             totalHours+= parseFloat(task.hours)
@@ -258,6 +258,8 @@ export default function logHours(){
         }));
 
         let chantierIndex = 0;
+
+        console.log("1")
         for (const chantier of loggedChantiers){
           if (totalHoursDiff[chantierIndex] != undefined){
             const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
@@ -308,6 +310,8 @@ export default function logHours(){
           chantierIndex++;
         }
 
+        console.log("fin update")
+
         toast.success('vos heures ont bien été enregistrés !', {
           position: "top-center",
           autoClose: 5000,
@@ -333,12 +337,20 @@ export default function logHours(){
       }
     }
 
-    const storeHours = async () => {
-        if (alreadyWorked){
-          updateStoredHours();
-        }else {
-          storeNewHours();
+    const storeHours = () => {
+      return new Promise(async (resolve, reject) => {
+        try {
+          if (alreadyWorked) {
+            await updateStoredHours();
+          } else {
+            await storeNewHours();
+          }
+          setOldTasksByChantier(deepCopy(loggedChantiers));
+          resolve(); // Résoudre la promesse lorsque tout est terminé
+        } catch (error) {
+          reject(error); // Rejeter la promesse en cas d'erreur
         }
+      });
     };
 
     const handleChantierChange = (oldChantierIndex, e) => {
@@ -367,21 +379,32 @@ export default function logHours(){
       setloggedChantiers(oldArray => [...oldArray, {chantier : chantiers[0].id, taskHours : chantierTaskHours}]);
     }
 
-    const removechantier = (index) => {
-      loggedChantiers.splice(index,1);
-      setloggedChantiers(oldArray => [...loggedChantiers]);
+    const removechantier = async (index) => {
+      try {
+        let newTaskHours = []
+        loggedChantiers[index].taskHours.forEach(task => {
+          newTaskHours.push({"task" : task.task, hours : 0})
+        })
+        loggedChantiers[index].taskHours = newTaskHours;
+        setloggedChantiers(loggedChantiers)
+        await storeHours();
+        loggedChantiers.splice(index,1);
+        setloggedChantiers(oldArray => [...loggedChantiers]);
+        console.log("fin")
+        console.log("storeHours() terminé avec succès");
+      } catch (erreur) {
+        console.error("Erreur lors de l'exécution de storeHours():", erreur);
+      }
     }
 
     const addOtherTask = (index) => {
       loggedChantiers[index].taskHours.push(taskHours)
       //setloggedChantiers(loggedChantiers);
       setloggedChantiers(oldArray => [...loggedChantiers]);
-
     }
 
     const removeTask = async (chantierIndex,taskIndex, loggedChantier) => {
 
-      console.log(oldTasksByChantier)
       let singleOldTaskByChantier = oldTasksByChantier.find(item => item.chantier ==  loggedChantier.chantier);
       let taskExist = false;
       let taskToDeleteValue;

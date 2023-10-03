@@ -167,14 +167,19 @@ export default function Details({params : {id}}) {
             </thead>
             <tbody>
               { tasks.map((task) =>(
-                <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
+                <>
+                {task.hours != 0 ? 
+                  <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
                   <th className="text-center font-medium text-gray-900 dark:text-white">
                     {task.task}
                   </th>
                   <td className="text-left font-medium text-gray-900 dark:text-white">
                     {task.hours}
                   </td>
-                </tr>
+                </tr> :
+                <></>
+                }
+                </>
               ))}
             </tbody>
           </table>
