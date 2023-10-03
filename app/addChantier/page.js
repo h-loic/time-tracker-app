@@ -37,7 +37,8 @@ export default function addChantier() {
             availableHours : availableHours,
             usedHours : 0,
             workerContribution : {},
-            isFinished : false
+            isFinished : false,
+            notes : []
         })
         router.back();
       };
