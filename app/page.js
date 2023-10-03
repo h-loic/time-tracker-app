@@ -46,7 +46,7 @@ export default function Home() {
     <>
     <div className="p-8">
       <h1 className='text-4xl p-4 text-center'>Time Tracker app</h1>
-      <div className='text-2xl p-4'>Bienvenue { worker.name }</div>
+      <div className='text-2xl p-4'>Bienvenue {worker != undefined ? worker.name : "..."} </div>
       <div className=''>
           <Link href="/logHours"><div className="uppercase text-slate-50 text-center bg-teal-800 p-4 rounded-lg mb-5 mt-3">Noter mes heures</div></Link>
           <br/><br/>

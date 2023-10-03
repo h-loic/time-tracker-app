@@ -108,9 +108,11 @@ export default function logHours(){
                 itemsArr.push({ ...doc.data(), id: doc.id });
               });
               setChantiers(itemsArr);
+              /*
               if (!alreadyExist){
                 setloggedChantiers(oldArray => [...oldArray, {chantier : itemsArr[0].id, taskHours : chantierTaskHours}]);
               }
+              */
               return () => unsubscribe();
             });
           }
@@ -259,7 +261,6 @@ export default function logHours(){
 
         let chantierIndex = 0;
 
-        console.log("1")
         for (const chantier of loggedChantiers){
           if (totalHoursDiff[chantierIndex] != undefined){
             const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
@@ -474,8 +475,13 @@ export default function logHours(){
     }
 
     const handleDateChange = (currentDate) => {
-      setDate(currentDate);
-      router.push("/logHours/"+ currentDate.getTime())
+      let annee = currentDate.getFullYear();
+      let mois = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
+      let jour = currentDate.getDate().toString().padStart(2, '0');
+      let formatDate = `${annee}-${mois}-${jour} `;
+      let parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
+      let timestamp = getTime(parsedDate);
+      router.push("/logHours/"+ timestamp)
     }
 
     return(
@@ -513,6 +519,7 @@ export default function logHours(){
               </div>
               <br/><br/>
                 <div className=''>
+                    {loaded ? <></> : <>Loading</>}
                     { loggedChantiers.map((loggedChantier, index) => (
                       <div key={"chantier "+ loggedChantier.chantier + index + date}>
                         <div className='bg-slate-200 p-3 rounded shadow-[rgba(0,_0,_0,_0.8)_0px_0px_50px]'>

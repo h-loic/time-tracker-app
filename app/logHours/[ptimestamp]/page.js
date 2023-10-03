@@ -82,18 +82,15 @@ export default function logHours({params : {ptimestamp}}){
             setCurrentTimestamp(timestamp)
             const check = async () =>{
               const docRef7 = doc(db, `workers/${workerId}/workedDay/${timestamp}`)
-              const document7 = await getDoc(docRef7);
-              console.log("okok")
-              if (document7.exists()){
-                console.log("dac")
-                setAlreadyWorked(true)
-                const data = document7.data();
-                console.log(data)
-                setloggedChantiers(data.loggedChantiers)
-                setOldTasksByChantier(deepCopy(data.loggedChantiers))
-              }else{
-                alreadyExist = false
+              await getDoc(docRef7).then(async (document7) =>{
+                if (document7.exists()){
+                  setAlreadyWorked(true)
+                  const data = document7.data();
+                  setloggedChantiers(data.loggedChantiers)
+                  setOldTasksByChantier(deepCopy(data.loggedChantiers))
+                }
               }
+              );
             }
             check();
 
@@ -106,9 +103,11 @@ export default function logHours({params : {ptimestamp}}){
                 itemsArr.push({ ...doc.data(), id: doc.id });
               });
               setChantiers(itemsArr);
+              /*
               if (!alreadyExist){
                 setloggedChantiers(oldArray => [...oldArray, {chantier : itemsArr[0].id, taskHours : chantierTaskHours}]);
               }
+              */
               return () => unsubscribe();
             });
           }
@@ -516,6 +515,7 @@ export default function logHours({params : {ptimestamp}}){
               </div>
               <br/><br/>
                 <div className=''>
+                    {loaded ? <></> : <>Loading</>}
                     { loggedChantiers.map((loggedChantier, index) => (
                       <div key={"chantier "+ loggedChantier.chantier + index + date}>
                         <div className='bg-slate-200 p-3 rounded shadow-[rgba(0,_0,_0,_0.8)_0px_0px_50px]'>
