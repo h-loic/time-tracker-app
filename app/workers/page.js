@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import Image from 'next/image'
+import NavBar from '../../components/navBar';
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   collection,
   addDoc,
@@ -16,6 +17,8 @@ import {
 import {db} from '../firebase'
 
 export default function Chantiers() {
+
+  const router = useRouter();
 
   const [workers, setWorkers] = useState([]);
 
@@ -39,15 +42,22 @@ export default function Chantiers() {
     },
   });
 
+  const redirectToInformation = (workerMail) =>{
+    const encodedEmail = encodeURIComponent(workerMail);
+    router.push("/workers/" + encodedEmail)
+  }
+
   return (
     <>
-        <h1 className='text-4xl p-4 text-center'>Liste des ouvriers</h1>
-
-        <div className=''>
-            { workers.map((worker) => (
-                <div key={worker.id} className="text-center text-slate-50 bg-blue-800 p-4 rounded-lg mb-3 mt-3">{ worker.name } {worker.totalHours}</div>
-            ))}
-        </div>
+      <NavBar/>
+      <h1 className='text-4xl mb-4 p-4 text-center'>Liste des ouvriers</h1>
+      <div className=''>
+          { workers.map((worker) => (
+            <button key={worker.id} onClick={() => redirectToInformation(worker.mail)}  className='w-full'>
+              <div className="text-center font-bold text-slate-50 bg-teal-800 p-2 rounded-lg mb-3 mt-3">{ worker.name}</div>
+            </button>
+          ))}
+      </div>
       </>
   )
 }
