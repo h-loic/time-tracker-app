@@ -12,7 +12,16 @@ export default function Signin() {
     const router = useRouter();
 
   const connection = async() => {
-    signIn('credentials', {email, password, redirect: true, callbackUrl: '/'})
+    const result = await signIn('credentials', {email, password, redirect: false, callbackUrl: '/'})
+    if (result != undefined) {
+      if (result.error === 'CredentialsSignin') {
+        // Le mot de passe est incorrect
+        setError('Mot de passe incorrect');
+      } else {
+        // Gérer d'autres erreurs d'authentification
+        router.push("/")
+      }
+    }
   };
   
 
@@ -67,7 +76,7 @@ export default function Signin() {
                 />
               </div>
             </div>
-            <div>{error}</div>
+            <div className='text-red-800'>{error}</div>
 
             <div>
               <button

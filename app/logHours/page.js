@@ -390,8 +390,6 @@ export default function logHours(){
         await storeHours();
         loggedChantiers.splice(index,1);
         setloggedChantiers(oldArray => [...loggedChantiers]);
-        console.log("fin")
-        console.log("storeHours() terminé avec succès");
       } catch (erreur) {
         console.error("Erreur lors de l'exécution de storeHours():", erreur);
       }

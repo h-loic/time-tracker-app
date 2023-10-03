@@ -107,7 +107,7 @@ export default function Signup() {
             <div>
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="block text-sm font-medium leading-6">
-                  valilder le mot de passe
+                  valider le mot de passe
                 </label>
               </div>
               <div className="mt-2">
@@ -122,7 +122,7 @@ export default function Signup() {
                 />
               </div>
             </div>
-            <div>
+            <div className='text-red-800'>
               {error}
               <br/>
               { password != passwordAgain ? "mdp différent" : ""}
