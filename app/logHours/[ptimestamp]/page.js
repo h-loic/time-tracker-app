@@ -334,13 +334,20 @@ export default function logHours({params : {ptimestamp}}){
         }
       }
   
-      const storeHours = async () => {
-          if (alreadyWorked){
-            updateStoredHours();
-          }else {
-            storeNewHours();
+      const storeHours = () => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            if (alreadyWorked) {
+              await updateStoredHours();
+            } else {
+              await storeNewHours();
+            }
+            setOldTasksByChantier(deepCopy(loggedChantiers));
+            resolve(); // Résoudre la promesse lorsque tout est terminé
+          } catch (error) {
+            reject(error); // Rejeter la promesse en cas d'erreur
           }
-          setOldTasksByChantier(deepCopy(loggedChantiers))
+        });
       };
 
     const handleChantierChange = (oldChantierIndex, e) => {
@@ -369,9 +376,22 @@ export default function logHours({params : {ptimestamp}}){
       setloggedChantiers(oldArray => [...oldArray, {chantier : chantiers[0].id, taskHours : chantierTaskHours}]);
     }
 
-    const removechantier = (index) => {
-      loggedChantiers.splice(index,1);
-      setloggedChantiers(oldArray => [...loggedChantiers]);
+    const removechantier = async (index) => {
+      try {
+        let newTaskHours = []
+        loggedChantiers[index].taskHours.forEach(task => {
+          newTaskHours.push({"task" : task.task, hours : 0})
+        })
+        loggedChantiers[index].taskHours = newTaskHours;
+        setloggedChantiers(loggedChantiers)
+        await storeHours();
+        loggedChantiers.splice(index,1);
+        setloggedChantiers(oldArray => [...loggedChantiers]);
+        console.log("fin")
+        console.log("storeHours() terminé avec succès");
+      } catch (erreur) {
+        console.error("Erreur lors de l'exécution de storeHours():", erreur);
+      }
     }
 
     const addOtherTask = (index) => {
