@@ -133,10 +133,10 @@ export default function logHours(){
         }
       }, [session]);
 
-    const storeNewHours = async () => {
+    const storeNewHours = async (ploggedChantiers) => {
       try{
           let totalHours = 0;
-          loggedChantiers.forEach(async chantier => {
+          ploggedChantiers.forEach(async chantier => {
             chantier.taskHours.forEach(async task => {
               let tempHours;
               if ( isNaN(task.hours)){
@@ -155,7 +155,7 @@ export default function logHours(){
             });
           });
 
-          loggedChantiers.forEach(async chantier => {
+          ploggedChantiers.forEach(async chantier => {
             const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
             const document = await getDoc(docRef1);
             if (document.exists()){
@@ -196,9 +196,9 @@ export default function logHours(){
             const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
             const document6 = await getDoc(docRef6);
             if (document6.exists()){
-                await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+                await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
             }else{
-                await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+                await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
             }
           })
           toast.success('vos heures ont bien été enregistrés !', {
@@ -226,12 +226,12 @@ export default function logHours(){
         }
     }
 
-    const updateStoredHours = async () => {
+    const updateStoredHours = async (ploggedChantiers) => {
       try{
         let totalHours = 0;
         let totalHoursDiff = [];
 
-        await Promise.all(loggedChantiers.map(async chantier => {
+        await Promise.all(ploggedChantiers.map(async chantier => {
           let oldTasks = []
           let singleOldTaskByChantier = oldTasksByChantier.find(item => item.chantier == chantier.chantier);
           if (singleOldTaskByChantier != undefined){
@@ -272,7 +272,7 @@ export default function logHours(){
 
         let chantierIndex = 0;
 
-        for (const chantier of loggedChantiers){
+        for (const chantier of ploggedChantiers){
           if (totalHoursDiff[chantierIndex] != undefined){
             const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
             const document = await getDoc(docRef1);
@@ -315,14 +315,12 @@ export default function logHours(){
           const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
           const document6 = await getDoc(docRef6);
           if (document6.exists()){
-            await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+            await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
           }else{
-            await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : loggedChantiers })
+            await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
           }
           chantierIndex++;
         }
-
-        console.log("fin update")
 
         toast.success('vos heures ont bien été enregistrés !', {
           position: "top-center",
@@ -349,15 +347,32 @@ export default function logHours(){
       }
     }
 
-    const storeHours = () => {
+    const storeHours = (ploggedChantiers) => {
       return new Promise(async (resolve, reject) => {
         try {
-          if (alreadyWorked) {
-            await updateStoredHours();
-          } else {
-            await storeNewHours();
+          let chantiersTab = []
+          for (const chantier of ploggedChantiers){
+            if (chantiersTab.includes(chantier.chantier)){
+              toast.error('2 même chantier', {
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+            }else{
+              chantiersTab.push(chantier.chantier)
+            }
           }
-          setOldTasksByChantier(deepCopy(loggedChantiers));
+          if (alreadyWorked) {
+            await updateStoredHours(ploggedChantiers);
+          } else {
+            await storeNewHours(ploggedChantiers);
+          }
+          setOldTasksByChantier(deepCopy(ploggedChantiers));
           resolve(); // Résoudre la promesse lorsque tout est terminé
         } catch (error) {
           reject(error); // Rejeter la promesse en cas d'erreur
@@ -399,9 +414,10 @@ export default function logHours(){
         })
         loggedChantiers[index].taskHours = newTaskHours;
         setloggedChantiers(loggedChantiers)
-        await storeHours();
+        let ploggedChantiers =  deepCopy(loggedChantiers)
         loggedChantiers.splice(index,1);
         setloggedChantiers(oldArray => [...loggedChantiers]);
+        await storeHours(ploggedChantiers);
       } catch (erreur) {
         console.error("Erreur lors de l'exécution de storeHours():", erreur);
       }
@@ -608,7 +624,7 @@ export default function logHours(){
                 <label htmlFor="message" className="block mt-3 mb-0 text-sm font-medium text-gray-900 dark:text-white">ajouter un message</label>
                 <textarea id="message" onChange={(e) => setMessage(e.target.value)} rows="4" className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder=""></textarea>
                 <br/><br/>
-                <button type="button" onClick={() => storeHours()} className="text-white bg-green-700 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-gree-700 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-700 dark:hover:bg-green-700 dark:focus:ring-green-800">Enregistrer mes heures</button>
+                <button type="button" onClick={() => storeHours(loggedChantiers)} className="text-white bg-green-700 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-gree-700 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-700 dark:hover:bg-green-700 dark:focus:ring-green-800">Enregistrer mes heures</button>
                 <br/><br/>
                 <button type="button" onClick={() => router.back()} className="text-white bg-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-600 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-600 dark:focus:ring-red-800">Annuler</button>
               </div>
