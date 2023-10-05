@@ -133,13 +133,19 @@ export default function logHours({params : {ptimestamp}}){
             let totalHours = 0;
             loggedChantiers.forEach(async chantier => {
               chantier.taskHours.forEach(async task => {
-                totalHours+= parseFloat(task.hours)
+                let tempHours;
+                if ( isNaN(task.hours)){
+                  tempHours = 0
+                }else {
+                  tempHours = task.hours
+                }
+                totalHours+= parseFloat(tempHours)
                 const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
                 const document5 = await getDoc(docRef5);
                 if (document5.exists()){
-                    await updateDoc(docRef5, {"hours" : increment(parseFloat(task.hours)), "task" : task.task})
+                    await updateDoc(docRef5, {"hours" : increment(parseFloat(tempHours)), "task" : task.task})
                 }else{
-                    await setDoc(docRef5, {"hours": increment(parseFloat(task.hours)), "task" : task.task})
+                    await setDoc(docRef5, {"hours": increment(parseFloat(tempHours)), "task" : task.task})
                 }
               });
             });
@@ -216,7 +222,6 @@ export default function logHours({params : {ptimestamp}}){
       }
 
       const updateStoredHours = async () => {
-        console.log("UPDATE")
         try{
           let totalHours = 0;
           let totalHoursDiff = [];
@@ -231,7 +236,13 @@ export default function logHours({params : {ptimestamp}}){
             console.log(oldTasks)
             let chantierHoursDiff = 0;
             chantier.taskHours.forEach(async task => {
-              totalHours+= parseFloat(task.hours)
+              let tempHours;
+              if ( isNaN(task.hours)){
+                tempHours = 0
+              }else {
+                tempHours = task.hours
+              }
+              totalHours+= parseFloat(tempHours)
               let oldTaskHours;
               if (oldTasks.length != 0){
                 let oldTaskHoursTemp = oldTasks.find(item => item.task === task.task);
@@ -243,7 +254,7 @@ export default function logHours({params : {ptimestamp}}){
               }else{
                 oldTaskHours = 0;
               }
-              let hoursDiff =  task.hours - oldTaskHours;
+              let hoursDiff =  tempHours - oldTaskHours;
               chantierHoursDiff += hoursDiff;
               const docRef5 = doc(db, `chantiers/${chantier.chantier}/tasks/${task.task}`)
               const document5 = await getDoc(docRef5);

@@ -25,16 +25,44 @@ export default function addChantier() {
     const [availableHours, setAvailableHours] = useState(0);
 
     const handleFormSubmit = async (e) => {
+        let budget;
+        if (formData.budget == "" || isNaN(formData.budget) || formData.budget == undefined || Number.isNaN(formData.budget)){
+            budget = 0;
+        }else{
+            budget = formData.budget
+        }
+        let materiel;
+        if (formData.materiel == "" || isNaN(formData.materiel) || formData.materiel == undefined || Number.isNaN(formData.materiel)){
+            materiel = 0;
+        }else{
+            materiel = formData.materiel
+        }
+        let hoursPrice;
+        if (formData.hoursPrice == "" || isNaN(formData.hoursPrice) || formData.hoursPrice == undefined || Number.isNaN(formData.hoursPrice)){
+            hoursPrice = 0;
+        }else{
+            hoursPrice = formData.hoursPrice
+        }
+        let availableHours2;
+        if (availableHours == "" || isNaN(availableHours) || availableHours == undefined || Number.isNaN(availableHours)){
+            if (hoursPrice == 0){
+                availableHours2 = 0
+            }else{
+                availableHours2 = (budget - materiel) / hoursPrice
+            }
+        }else{
+            availableHours2 = availableHours
+        }
         e.preventDefault()
         await addDoc(collection(db, 'chantiers'), {
             name : formData.name,
             address : formData.address,
             type : formData.type,
-            budget : formData.budget,
-            materiel : formData.materiel,
-            hoursPrice : formData.hoursPrice,
-            totalHours : availableHours,
-            availableHours : availableHours,
+            budget : budget,
+            materiel : materiel,
+            hoursPrice : hoursPrice,
+            totalHours : availableHours2,
+            availableHours : availableHours2,
             usedHours : 0,
             workerContribution : {},
             isFinished : false,
