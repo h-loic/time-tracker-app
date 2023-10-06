@@ -80,6 +80,16 @@ export default function Details({params : {id}}) {
       setChantier(updatedChantier)
       setNewNote("");
     }
+
+    const deleteNote = async (noteToDelete) => {
+      const docRef = doc(db, "chantiers", id);
+      await updateDoc(docRef, {
+        notes : arrayRemove(noteToDelete)
+      })
+
+      const updatedChantier = { ...chantier, notes: chantier.notes.filter((note) => note !== noteToDelete )};
+      setChantier(updatedChantier);
+    }
   
     return (
       <>
@@ -223,9 +233,12 @@ export default function Details({params : {id}}) {
 
           <div className="ml-3 mt-5 text-md font-bold mb-3">Note</div>
           {chantier.notes.map((note) =>(
-            <div className="w-full border border-teal-800 p-1 mt-1 rounded">{note}                            
+            <div className="w-full grid grid-cols-12 border border-teal-800 p-1 mt-1 rounded">
+              <div className="col-span-11">{note}</div>
+              <a onClick={() => deleteNote(note)} className="col-span-1"><FaTrashAlt className="text-red-800"/></a>                             
             </div>
           ))}
+          
           <textarea id="message" rows="4" className="mt-3 placeholder-teal-800 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-teal-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
            placeholder="votre note..."
            value={newNote} onChange={(e) => setNewNote(e.target.value)} 
