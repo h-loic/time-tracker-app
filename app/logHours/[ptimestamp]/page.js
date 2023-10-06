@@ -134,7 +134,7 @@ export default function logHours({params : {ptimestamp}}){
             ploggedChantiers.forEach(async chantier => {
               chantier.taskHours.forEach(async task => {
                 let tempHours;
-                if ( tempHours == "" || isNaN(tempHours) || tempHours == undefined || Number.isNaN(tempHours)){
+                if ( isNaN(task.hours)){
                   tempHours = 0
                 }else {
                   tempHours = task.hours
