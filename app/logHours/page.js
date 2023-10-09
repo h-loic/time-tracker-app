@@ -139,7 +139,7 @@ export default function logHours(){
           ploggedChantiers.forEach(async chantier => {
             chantier.taskHours.forEach(async task => {
               let tempHours;
-              if ( isNaN(task.hours)){
+              if (task.hours == "" || isNaN(task.hours) || task.hours == undefined || Number.isNaN(task.hours)){
                 tempHours = 0
               }else {
                 tempHours = task.hours
@@ -155,62 +155,62 @@ export default function logHours(){
             });
           });
 
-          ploggedChantiers.forEach(async chantier => {
-            const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
-            const document = await getDoc(docRef1);
-            if (document.exists()){
-                await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
-            }else{
-                await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
-            }
+        ploggedChantiers.forEach(async chantier => {
+          const docRef1 = doc(db, `workers/${worker.id}/chantiers/${chantier.chantier}`)
+          const document = await getDoc(docRef1);
+          if (document.exists()){
+              await updateDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
+          }else{
+              await setDoc(docRef1, {"chantierId" : chantier.chantier,"chantierHours" : increment(totalHours)})
+          }
 
-            const docRef2 = doc(db, `workers`,worker.id)
-            updateDoc(docRef2, {
-                totalHours : increment(totalHours)
-            })
-    
-            const docRef3 = doc(db,"chantiers", chantier.chantier)
-            updateDoc(docRef3,{
-                availableHours : increment(-totalHours),
-                usedHours : increment(totalHours)
-            })
-    
-            const docRef4 = doc(db, `chantiers/${chantier.chantier}/workers/${worker.id}`)
-            const document4 = await getDoc(docRef4);
-            if (document4.exists()){
-                await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
-            }else{
-                await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHours})
-            }
-
-            const annee = date.getFullYear();
-            const mois = (date.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
-            const jour = date.getDate().toString().padStart(2, '0');
-            const formatDate = `${annee}-${mois}-${jour} `;
-
-            const parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
-
-            // Obtenez le timestamp (en millisecondes)
-            const timestamp = getTime(parsedDate);
-
-            const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
-            const document6 = await getDoc(docRef6);
-            if (document6.exists()){
-                await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
-            }else{
-                await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
-            }
+          const docRef2 = doc(db, `workers`,worker.id)
+          updateDoc(docRef2, {
+              totalHours : increment(totalHours)
           })
-          toast.success('vos heures ont bien été enregistrés !', {
-            position: "top-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-            });
+  
+          const docRef3 = doc(db,"chantiers", chantier.chantier)
+          updateDoc(docRef3,{
+              availableHours : increment(-totalHours),
+              usedHours : increment(totalHours)
+          })
+  
+          const docRef4 = doc(db, `chantiers/${chantier.chantier}/workers/${worker.id}`)
+          const document4 = await getDoc(docRef4);
+          if (document4.exists()){
+              await updateDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : increment(totalHours)})
+          }else{
+              await setDoc(docRef4, {"name": worker.name,"workerId" : worker.id,"workedHours" : totalHours})
+          }
+
+          const annee = date.getFullYear();
+          const mois = (date.getMonth() + 1).toString().padStart(2, '0'); // Mois commence à 0, donc ajoutez 1
+          const jour = date.getDate().toString().padStart(2, '0');
+          const formatDate = `${annee}-${mois}-${jour} `;
+
+          const parsedDate = parse(formatDate, 'yyyy-MM-dd', new Date());
+
+          // Obtenez le timestamp (en millisecondes)
+          const timestamp = getTime(parsedDate);
+
+          const docRef6 = doc(db, `workers/${worker.id}/workedDay/${timestamp}`)
+          const document6 = await getDoc(docRef6);
+          if (document6.exists()){
+              await updateDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
+          }else{
+              await setDoc(docRef6, {"hours" : totalHours, "message" : message, "timestamp" : timestamp, "loggedChantiers" : ploggedChantiers })
+          }
+        })
+        toast.success('vos heures ont bien été enregistrés !', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
         }catch(e){
           console.log(e);
           toast.error('une erreur c est produite !', {
@@ -240,7 +240,7 @@ export default function logHours(){
           let chantierHoursDiff = 0;
           chantier.taskHours.forEach(async task => {
             let tempHours;
-            if ( isNaN(task.hours)){
+            if (task.hours == "" || isNaN(task.hours) || task.hours == undefined || Number.isNaN(task.hours)){
               tempHours = 0
             }else {
               tempHours = task.hours
@@ -367,11 +367,14 @@ export default function logHours(){
               chantiersTab.push(chantier.chantier)
             }
           }
+          await updateStoredHours(ploggedChantiers);
+          /*
           if (alreadyWorked) {
             await updateStoredHours(ploggedChantiers);
           } else {
             await storeNewHours(ploggedChantiers);
           }
+          */
           setOldTasksByChantier(deepCopy(ploggedChantiers));
           resolve(); // Résoudre la promesse lorsque tout est terminé
         } catch (error) {

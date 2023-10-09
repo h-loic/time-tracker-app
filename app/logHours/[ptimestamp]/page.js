@@ -134,7 +134,7 @@ export default function logHours({params : {ptimestamp}}){
             ploggedChantiers.forEach(async chantier => {
               chantier.taskHours.forEach(async task => {
                 let tempHours;
-                if ( isNaN(task.hours)){
+                if (task.hours == "" || isNaN(task.hours) || task.hours == undefined || Number.isNaN(task.hours)){
                   tempHours = 0
                 }else {
                   tempHours = task.hours
@@ -237,7 +237,7 @@ export default function logHours({params : {ptimestamp}}){
             let chantierHoursDiff = 0;
             chantier.taskHours.forEach(async task => {
               let tempHours;
-              if ( isNaN(task.hours)){
+              if (task.hours == "" || isNaN(task.hours) || task.hours == undefined || Number.isNaN(task.hours)){
                 tempHours = 0
               }else {
                 tempHours = task.hours
@@ -366,11 +366,13 @@ export default function logHours({params : {ptimestamp}}){
                 chantiersTab.push(chantier.chantier)
               }
             }
+            await updateStoredHours(ploggedChantiers);
+            /*
             if (alreadyWorked) {
               await updateStoredHours(ploggedChantiers);
             } else {
               await storeNewHours(ploggedChantiers);
-            }
+            }*/
             setOldTasksByChantier(deepCopy(loggedChantiers));
             resolve(); // Résoudre la promesse lorsque tout est terminé
           } catch (error) {
