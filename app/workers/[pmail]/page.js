@@ -265,11 +265,15 @@ export default function Information({params : {pmail}}) {
     let workbook = new ExcelJS.Workbook();
     let worksheet = workbook.addWorksheet('Feuille 1');
 
+    worksheet.addRow([1]);
+
     let moisAnnee = months[date.getMonth()] +" "+ date.getFullYear(); 
-    worksheet.getCell('A1').value = "mois : ";
+    worksheet.mergeCells('A1:B1');
     worksheet.getCell('B1').value = moisAnnee;
     worksheet.getCell('A1').font = {bold : true};
-    worksheet.getCell('B1').font = {bold : true};
+    worksheet.getCell('A1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('A1').fill = {type: 'pattern',pattern: 'solid',fgColor: { argb: 'B2BABB' }, }; 
+    worksheet.getCell('A1').style.font = { size: 16 };     
 
     let index = 1;
     tableData[selectedMonth].forEach(element => {
@@ -280,16 +284,20 @@ export default function Information({params : {pmail}}) {
 
       worksheet.getCell(case1).value = index;
       worksheet.getCell(case2).value = element.hours;
+      worksheet.getCell(case1).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+      worksheet.getCell(case2).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+      worksheet.getCell(case1).alignment = { horizontal: 'center', vertical: 'middle' };
+      worksheet.getCell(case2).alignment = { horizontal: 'center', vertical: 'middle' };
       if (isWeekend(firstDayDay, parseInt(index)-1)){
         worksheet.getCell(case1).fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: '2A2727' }, // Couleur de fond (ici, rose)
+          fgColor: { argb: '2A2727' }, 
         };
         worksheet.getCell(case2).fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: '2A2727' }, // Couleur de fond (ici, rose)
+          fgColor: { argb: '2A2727' }, 
         };
       }
       index+=1;
@@ -300,6 +308,14 @@ export default function Information({params : {pmail}}) {
     worksheet.getCell('B34').value = { formula: 'SUM(B2:B32)' };
     worksheet.getCell('A34').font = {bold : true};
     worksheet.getCell('B34').font = {bold : true};
+    worksheet.getCell('A34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('B34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('A34').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('B34').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    worksheet.columns[0].width = 20;
+    worksheet.columns[1].width = 20;
+    worksheet.getRow(1).height = 30;
   
     // Créez un objet Blob à partir du contenu Excel
     workbook.xlsx.writeBuffer().then((buffer) => {
@@ -368,6 +384,7 @@ export default function Information({params : {pmail}}) {
     for (let i = 2; i <= 32; i++){
       caseA = 'A' + i; 
       worksheet.getCell(caseA).value = i-1;
+      worksheet.getCell(caseA).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
       worksheet.getCell(caseA).fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -403,6 +420,20 @@ export default function Information({params : {pmail}}) {
     worksheet.getCell("L1").font = {bold : true};
     worksheet.getCell("M1").font = {bold : true};
 
+    worksheet.getCell('B1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('C1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('D1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('E1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('F1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('G1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('H1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('I1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('J1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('K1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('L1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('M1').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+
+
     let letter = ["B","C","D","E","F","G","H","I","J","K","L","M"];
     let letterIndex = 0;
 
@@ -418,6 +449,7 @@ export default function Information({params : {pmail}}) {
         tempIndex = i + 2;
         tempCase = letter[letterIndex] + tempIndex;
         worksheet.getCell(tempCase).value = tempDataMonth[i].hours;
+        worksheet.getCell(tempCase).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
         if (isWeekend(tempFirstDay, i+1)){
           worksheet.getCell(tempCase).fill = {
             type: 'pattern',
@@ -443,9 +475,25 @@ export default function Information({params : {pmail}}) {
     worksheet.getCell('L34').value = { formula: 'SUM(L2:L32)' };
     worksheet.getCell('M34').value = { formula: 'SUM(M2:M32)' };
 
+    worksheet.getCell('B34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('C34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('D34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('E34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('F34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('G34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('H34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('I34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('J34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('K34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('L34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('M34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+
     worksheet.getCell('G36').value = "TOTAL :";
     worksheet.getCell('H36').value = { formula: 'SUM(B34:M34)' };
-
+    worksheet.getCell('G36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('H36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('G36').style.font = { size: 12 };
+    worksheet.getCell('H36').style.font = { size: 12 };
   
     // Créez un objet Blob à partir du contenu Excel
     workbook.xlsx.writeBuffer().then((buffer) => {
@@ -543,9 +591,9 @@ export default function Information({params : {pmail}}) {
                   <>
                     <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                     <th className="font-medium text-gray-900 dark:text-white">
-                      <a className='underline' onClick={() =>redirectToHoursLog(index+1)}>
+                      <div>
                         {index+1}
-                      </a>
+                      </div>
                     </th>
                     <td className="">
                       {day.hours}

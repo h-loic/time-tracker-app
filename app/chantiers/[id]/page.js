@@ -148,7 +148,7 @@ export default function Details({params : {id}}) {
 
       worksheet.getCell('A6').value = "Budget"
       worksheet.getCell('B6').value = chantier.budget
-      worksheet.getCell('B4').alignment = { horizontal: 'center', vertical: 'middle' };
+      worksheet.getCell('B6').alignment = { horizontal: 'center', vertical: 'middle' };
       worksheet.getCell('A6').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
       worksheet.getCell('B6').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
 
