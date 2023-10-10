@@ -205,6 +205,13 @@ export default function MyInformation() {
     return false;
   }
 
+  const isFriday = (firstDay, index) => {
+    if (((firstDay + index)% 7 == 5)){
+      return true;
+    } 
+    return false;
+  }
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const handleClick = (e) => {
@@ -260,6 +267,8 @@ export default function MyInformation() {
 
   const telechargerMoisExcel = () => {
 
+    let totalClassicHours = 0;
+    let totalHours = 0;
     let workbook = new ExcelJS.Workbook();
     let worksheet = workbook.addWorksheet('Feuille 1');
 
@@ -282,6 +291,7 @@ export default function MyInformation() {
 
       worksheet.getCell(case1).value = index;
       worksheet.getCell(case2).value = element.hours;
+      totalHours+= element.hours;
       worksheet.getCell(case1).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
       worksheet.getCell(case2).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
       worksheet.getCell(case1).alignment = { horizontal: 'center', vertical: 'middle' };
@@ -297,6 +307,10 @@ export default function MyInformation() {
           pattern: 'solid',
           fgColor: { argb: 'B2BABB' }, 
         };
+      }else if (isFriday(firstDayDay, parseInt(index)-1)){
+        totalClassicHours+=6;
+      }else{
+        totalClassicHours+=9;
       }
       index+=1;
       
@@ -310,6 +324,24 @@ export default function MyInformation() {
     worksheet.getCell('B34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
     worksheet.getCell('A34').alignment = { horizontal: 'center', vertical: 'middle' };
     worksheet.getCell('B34').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    worksheet.getCell('A35').value = "TOTAL Normal";
+    worksheet.getCell('B35').value = totalClassicHours;
+    worksheet.getCell('A35').font = {bold : true};
+    worksheet.getCell('B35').font = {bold : true};
+    worksheet.getCell('A35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('B35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('A35').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('B35').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    worksheet.getCell('A36').value = "Heure sup";
+    worksheet.getCell('B36').value = totalHours - totalClassicHours;
+    worksheet.getCell('A36').font = {bold : true};
+    worksheet.getCell('B36').font = {bold : true};
+    worksheet.getCell('A36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('B36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('A36').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('B36').alignment = { horizontal: 'center', vertical: 'middle' };
 
     worksheet.columns[0].width = 20;
     worksheet.columns[1].width = 20;
@@ -339,6 +371,8 @@ export default function MyInformation() {
   }
 
   const telechargerAnneeExcel = async() => {
+    let totalClassicHoursTab = [0,0,0,0,0,0,0,0,0,0,0,0];
+    let totalHoursTab = [0,0,0,0,0,0,0,0,0,0,0,0];
     let tableDataOfTheYear = {};
     let year = date.getFullYear();
 
@@ -378,6 +412,8 @@ export default function MyInformation() {
     let workbook = new ExcelJS.Workbook();
     let worksheet = workbook.addWorksheet('Feuille 1');
 
+    worksheet.addRow([1]);
+
     let caseA;
     for (let i = 2; i <= 32; i++){
       caseA = 'A' + i; 
@@ -389,8 +425,6 @@ export default function MyInformation() {
         fgColor: { argb: 'A9A9A9' }, // Couleur de fond (ici, rose)
       };
     }
-
-    worksheet.getCell("A34").value = "Total :";
 
     worksheet.getCell("B1").value = "jan";
     worksheet.getCell("C1").value = "feb";
@@ -447,6 +481,7 @@ export default function MyInformation() {
         tempIndex = i + 2;
         tempCase = letter[letterIndex] + tempIndex;
         worksheet.getCell(tempCase).value = tempDataMonth[i].hours;
+        totalHoursTab[letterIndex] += tempDataMonth[i].hours
         worksheet.getCell(tempCase).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
         if (isWeekend(tempFirstDay, i+1)){
           worksheet.getCell(tempCase).fill = {
@@ -454,12 +489,17 @@ export default function MyInformation() {
             pattern: 'solid',
             fgColor: { argb: 'B2BABB' }, // Couleur de fond (ici, rose)
           };
+        }else if (isFriday(tempFirstDay,  i+1)){
+          totalClassicHoursTab[letterIndex]+=6;
+        }else{
+          totalClassicHoursTab[letterIndex]+=9;
         }
       }
       firstDayIndex++;
       letterIndex++;
     }
 
+    worksheet.getCell("A34").value = "Total :";
     worksheet.getCell('B34').value = { formula: 'SUM(B2:B32)' };
     worksheet.getCell('C34').value = { formula: 'SUM(C2:C32)' };
     worksheet.getCell('D34').value = { formula: 'SUM(D2:D32)' };
@@ -473,6 +513,7 @@ export default function MyInformation() {
     worksheet.getCell('L34').value = { formula: 'SUM(L2:L32)' };
     worksheet.getCell('M34').value = { formula: 'SUM(M2:M32)' };
 
+    worksheet.getCell('A34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
     worksheet.getCell('B34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
     worksheet.getCell('C34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
     worksheet.getCell('D34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
@@ -486,12 +527,81 @@ export default function MyInformation() {
     worksheet.getCell('L34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
     worksheet.getCell('M34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
 
-    worksheet.getCell('G36').value = "TOTAL :";
-    worksheet.getCell('H36').value = { formula: 'SUM(B34:M34)' };
+    worksheet.getCell("A35").value = "Total Classique:";
+    worksheet.getCell('B35').value = totalClassicHoursTab[0]
+    worksheet.getCell('C35').value = totalClassicHoursTab[1]
+    worksheet.getCell('D35').value = totalClassicHoursTab[2]
+    worksheet.getCell('E35').value = totalClassicHoursTab[3]
+    worksheet.getCell('F35').value = totalClassicHoursTab[4]
+    worksheet.getCell('G35').value = totalClassicHoursTab[5]
+    worksheet.getCell('H35').value = totalClassicHoursTab[6]
+    worksheet.getCell('I35').value = totalClassicHoursTab[7]
+    worksheet.getCell('J35').value = totalClassicHoursTab[8]
+    worksheet.getCell('K35').value = totalClassicHoursTab[9]
+    worksheet.getCell('L35').value = totalClassicHoursTab[10]
+    worksheet.getCell('M35').value = totalClassicHoursTab[11]
+
+    worksheet.getCell('A35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('B35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('C35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('D35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('E35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('F35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('G35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('H35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('I35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('J35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('K35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('L35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('M35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+
+    worksheet.getCell("A36").value = "Heure Sup:";
+    worksheet.getCell('B36').value = totalHoursTab[0] - totalClassicHoursTab[0]
+    worksheet.getCell('C36').value = totalHoursTab[1] - totalClassicHoursTab[1]
+    worksheet.getCell('D36').value = totalHoursTab[2] - totalClassicHoursTab[2]
+    worksheet.getCell('E36').value = totalHoursTab[3] - totalClassicHoursTab[3]
+    worksheet.getCell('F36').value = totalHoursTab[4] - totalClassicHoursTab[4]
+    worksheet.getCell('G36').value = totalHoursTab[5] - totalClassicHoursTab[5]
+    worksheet.getCell('H36').value = totalHoursTab[6] - totalClassicHoursTab[6]
+    worksheet.getCell('I36').value = totalHoursTab[7] - totalClassicHoursTab[7]
+    worksheet.getCell('J36').value = totalHoursTab[8] - totalClassicHoursTab[8]
+    worksheet.getCell('K36').value = totalHoursTab[9] - totalClassicHoursTab[9]
+    worksheet.getCell('L36').value = totalHoursTab[10] - totalClassicHoursTab[10]
+    worksheet.getCell('M36').value = totalHoursTab[11] - totalClassicHoursTab[11]
+
+    worksheet.getCell('A36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('B36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('C36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('D36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('E36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('F36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
     worksheet.getCell('G36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
     worksheet.getCell('H36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
-    worksheet.getCell('G36').style.font = { size: 12 };
-    worksheet.getCell('H36').style.font = { size: 12 };
+    worksheet.getCell('I36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('J36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('K36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('L36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('M36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+
+    worksheet.getCell('N33').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('N34').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('N35').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('N36').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+
+    worksheet.getCell('N33').font = {bold : true};
+    worksheet.getCell('N34').font = {bold : true};
+    worksheet.getCell('N35').font = {bold : true};
+    worksheet.getCell('N36').font = {bold : true};
+    worksheet.getCell('A34').font = {bold : true};
+    worksheet.getCell('A35').font = {bold : true};
+    worksheet.getCell('A36').font = {bold : true};
+
+    worksheet.getCell('N33').value = "TOTAL";
+    worksheet.getCell('N34').value = { formula: 'SUM(B34:M34)' };
+    worksheet.getCell('N35').value = { formula: 'SUM(B35:M35)' };
+    worksheet.getCell('N36').value = { formula: 'SUM(B36:M36)' };
+
+    worksheet.columns[0].width = 25;
   
     // Créez un objet Blob à partir du contenu Excel
     workbook.xlsx.writeBuffer().then((buffer) => {
