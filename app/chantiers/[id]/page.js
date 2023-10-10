@@ -56,14 +56,7 @@ export default function Details({params : {id}}) {
       await updateDoc(doc(db, 'chantiers', id), {
           isFinished : !chantier.isFinished
       })
-      setChantier({
-        name : chantier.name,
-        budget : chantier.budget,
-        totalHours : chantier.totalHours,
-        availableHours : chantier.availableHours,
-        usedHours : chantier.usedHours,
-        isFinished : !chantier.isFinished
-      })
+      setChantier({...chantier, isFinished : !chantier.isFinished})
     };
 
     
@@ -350,7 +343,7 @@ export default function Details({params : {id}}) {
                   Nombre heures total
                 </th>
                 <td className="text-left font-medium text-gray-900 dark:text-white">
-                  {Math.round(chantier.totalHours)}
+                  {chantier.totalHours.toFixed(2)}
                 </td>
               </tr>
               <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
@@ -358,7 +351,7 @@ export default function Details({params : {id}}) {
                   Nombre heures restante
                 </th>
                 <td className="text-left font-medium text-gray-900 dark:text-white">
-                  {Math.round(chantier.availableHours)}
+                  {chantier.availableHours.toFixed(2)}
                 </td>
               </tr>
               <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
@@ -366,7 +359,7 @@ export default function Details({params : {id}}) {
                   Nombre heures utilisés
                 </th>
                 <td className="text-left font-medium text-gray-900 dark:text-white">
-                  {Math.round(chantier.usedHours)}
+                  {chantier.usedHours.toFixed(2)}
                 </td>
               </tr>
               <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">

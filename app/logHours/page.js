@@ -556,7 +556,7 @@ export default function logHours(){
                           <a className='float-right' onClick={() => removechantier(index)}>
                             <FaTrashAlt size="1.5em" color="red" className="mb-3 mr-3"/>
                           </a>
-                          <select id={"chantierId" + index} defaultValue={loggedChantier.chantier} value={chantiers.isFinished} name="chantierId" onChange={(e) => handleChantierChange(index, e)} className="font-bold bg-slate-50 border border-slate-500 text-gray-900 text-sm rounded-lg focus:ring-teal-800 focus:border-teal-800 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-800 dark:focus:border-teal-800">
+                          <select id={"chantierId" + index} defaultValue={loggedChantier.chantier} value={chantiers.isFinished} name="chantierId" onChange={(e) => handleChantierChange(index, e)} className="overflow-auto font-bold bg-slate-50 border border-slate-500 text-gray-900 text-sm rounded-lg focus:ring-teal-800 focus:border-teal-800 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-800 dark:focus:border-teal-800">
                               { chantiers.map((chantier) => (
                                   <option key={loggedChantier.chantier + chantier.id + index + date} value={chantier.id} >{chantier.name}</option>
                               ))}

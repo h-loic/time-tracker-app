@@ -290,12 +290,12 @@ export default function MyInformation() {
         worksheet.getCell(case1).fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: '2A2727' }, 
+          fgColor: { argb: 'B2BABB' }, 
         };
         worksheet.getCell(case2).fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: '2A2727' }, 
+          fgColor: { argb: 'B2BABB' }, 
         };
       }
       index+=1;
@@ -452,7 +452,7 @@ export default function MyInformation() {
           worksheet.getCell(tempCase).fill = {
             type: 'pattern',
             pattern: 'solid',
-            fgColor: { argb: '0F0F0F' }, // Couleur de fond (ici, rose)
+            fgColor: { argb: 'B2BABB' }, // Couleur de fond (ici, rose)
           };
         }
       }
