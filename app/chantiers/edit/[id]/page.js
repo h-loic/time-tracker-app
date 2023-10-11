@@ -1,5 +1,5 @@
 'use client';
-import { collection } from "firebase/firestore";
+import { collection, updateDoc } from "firebase/firestore";
 import { doc,getDoc, getDocs, setDoc } from "firebase/firestore";
 import {db} from '../../../firebase'
 import { useEffect, useState } from 'react';
@@ -15,16 +15,55 @@ export default function EditChantier({params : {id}}) {
         name: '',
         budget: 0,
       });
+      const [availableHours, setAvailableHours] = useState(0);
 
     const handleFormSubmit = async (e) => {
+        let usedHours;
+        if (formData.usedHours == "" || isNaN(formData.usedHours) || formData.usedHours == undefined || Number.isNaN(formData.usedHours)){
+            usedHours = 0;
+       }else{
+           usedHours = formData.usedHours
+       }
+        let budget;
+        if (formData.budget == "" || isNaN(formData.budget) || formData.budget == undefined || Number.isNaN(formData.budget)){
+            budget = 0;
+        }else{
+            budget = formData.budget
+        }
+        let materiel;
+        if (formData.materiel == "" || isNaN(formData.materiel) || formData.materiel == undefined || Number.isNaN(formData.materiel)){
+            materiel = 0;
+        }else{
+            materiel = formData.materiel
+        }
+        let hoursPrice;
+        if (formData.hoursPrice == "" || isNaN(formData.hoursPrice) || formData.hoursPrice == undefined || Number.isNaN(formData.hoursPrice)){
+            hoursPrice = 0;
+        }else{
+            hoursPrice = formData.hoursPrice
+        }
+        let availableHours2;
+        if (availableHours == "" || isNaN(availableHours) || availableHours == undefined || Number.isNaN(availableHours)){
+            if (hoursPrice == 0){
+                availableHours2 = 0
+            }else{
+                availableHours2 = ((budget - materiel) / hoursPrice) - usedHours
+            }
+        }else{
+            availableHours2 = availableHours
+        }
         e.preventDefault()
-        await setDoc(doc(db, 'chantiers', id), {
+        await updateDoc(doc(db, 'chantiers', id), {
             name : formData.name,
-            budget : formData.budget,
-            totalHours : formData.totalHours,
-            availableHours : formData.availableHours,
-            usedHours : formData.usedHours,
-            isFinished : formData.isFinished
+            address : formData.address,
+            type : formData.type,
+            budget : budget,
+            materiel : materiel,
+            hoursPrice : hoursPrice,
+            totalHours : parseInt(formData.totalHours),
+            availableHours : availableHours2,
+            usedHours : parseInt(formData.usedHours),
+            isFinished : formData.isFinished,
         })
         router.back();
       };
@@ -32,7 +71,15 @@ export default function EditChantier({params : {id}}) {
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData((prevData) => ({ ...prevData, [name]: value }));
+        if (name == "budget") {
+            setAvailableHours(((value-formData.materiel)/formData.hoursPrice)-usedHours)
+        }else if (name == "materiel"){
+            setAvailableHours(((formData.budget-value)/formData.hoursPrice)-usedHours)
+        }else if (name == "hoursPrice"){
+             setAvailableHours(((formData.budget-formData.materiel)/value)-usedHours)
+        }
     };
+
   
     useEffect(() => {
       if (id) {
@@ -42,9 +89,13 @@ export default function EditChantier({params : {id}}) {
           const docSnap = await getDoc(docRef);
           const a = docSnap.data();
           setChantier(a);
+          setAvailableHours(a.availableHours)
           setFormData({
             name : a.name,
+            address :  a.address,
+            type : a.type,
             budget : a.budget,
+            materiel : a.materiel,
             totalHours : a.totalHours,
             availableHours : a.availableHours,
             usedHours : a.usedHours,
@@ -69,8 +120,20 @@ export default function EditChantier({params : {id}}) {
                         <input value={formData.name} onChange={handleInputChange} type="text" name="name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="" required/>
                     </div>
                     <div className="mb-6">
+                        <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Adresse</label>
+                        <input value={formData.address} onChange={handleInputChange} type="text" name="address" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="" required/>
+                    </div>
+                    <div className="mb-6">
+                        <label htmlFor="type" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Quoi</label>
+                        <input value={formData.type} onChange={handleInputChange} type="text" name="type" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="" required/>
+                    </div>
+                    <div className="mb-6">
                         <label htmlFor="budget" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">budget</label>
                         <input value={formData.budget} onChange={handleInputChange} type="number" name="budget" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                    </div>
+                    <div className="mb-6">
+                        <label htmlFor="materiel" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Prix matériel</label>
+                        <input value={formData.materiel} onChange={handleInputChange} type="number" name="materiel" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                     </div>
                     <div className="mb-6">
                         <label htmlFor="totalHours" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">nombre heures total</label>
