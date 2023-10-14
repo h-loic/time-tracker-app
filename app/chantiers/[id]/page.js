@@ -296,15 +296,15 @@ export default function Details({params : {id}}) {
         <div className="">
           <h1 className='text-4xl mb-4 p-4 text-center'>{ chantier.name}</h1>
           <div className='grid grid-cols-2 gap-4 mb-5 mt-5'>
-            <Link href={`/chantiers/edit/${id}` } type="button" className="text-center text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800">modifier le chantier</Link>
+            <Link href={`/chantiers/edit/${id}` } type="button" className="text-center text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2focus:outline-none">modifier le chantier</Link>
               <button type="button" onClick={() => changeFinishedStatus()} 
-              className="text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-blue-800">
+              className="text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2focus:outline-none">
                 {chantier.isFinished ? "rouvrir le chantier" : "terminer le chantier"}
                 </button>
           </div>
 
-          <table className="w-full border-collapse border border-slate-400 text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-white uppercase bg-teal-800 dark:bg-gray-700 p-3 dark:text-gray-400">
+          <table className="w-full border-collapse border border-slate-400 text-sm text-left text-gray-500">
+            <thead className="text-xs text-white uppercase bg-teal-800">
                 <tr>
                   <th>
                     Informations Générales 
@@ -314,67 +314,67 @@ export default function Details({params : {id}}) {
                 </tr>
             </thead>
             <tbody>
-              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                <th className=" font-medium text-gray-900 dark:text-white">
+              <tr className="bg-slate-300 border-b">
+                <th className=" font-medium text-gray-900">
                   Adresse
                 </th>
-                <td className="text-left font-medium text-gray-900 dark:text-white">
+                <td className="text-left font-medium text-gray-900">
                   {chantier.address}
                 </td>
               </tr>
-              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                <th className=" font-medium text-gray-900 dark:text-white">
+              <tr className="bg-slate-300 border-b">
+                <th className=" font-medium text-gray-900">
                   Quoi
                 </th>
-                <td className="text-left font-medium text-gray-900 dark:text-white">
+                <td className="text-left font-medium text-gray-900">
                   {chantier.type}
                 </td>
               </tr>
-              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                <th className=" font-medium text-gray-900 dark:text-white">
+              <tr className="bg-slate-300 border-b">
+                <th className=" font-medium text-gray-900">
                   Budget
                 </th>
-                <td className="text-left font-medium text-gray-900 dark:text-white">
+                <td className="text-left font-medium text-gray-900">
                   {chantier.budget}
                 </td>
               </tr>
-              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                <th className=" font-medium text-gray-900 dark:text-white">
+              <tr className="bg-slate-300 border-b">
+                <th className=" font-medium text-gray-900">
                   Nombre heures total
                 </th>
-                <td className="text-left font-medium text-gray-900 dark:text-white">
+                <td className="text-left font-medium text-gray-900">
                   {chantier.totalHours.toFixed(2)}
                 </td>
               </tr>
-              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                <th className=" font-medium text-gray-900 dark:text-white">
+              <tr className="bg-slate-300 border-b">
+                <th className=" font-medium text-gray-900">
                   Nombre heures restante
                 </th>
-                <td className="text-left font-medium text-gray-900 dark:text-white">
+                <td className="text-left font-medium text-gray-900">
                   {chantier.availableHours.toFixed(2)}
                 </td>
               </tr>
-              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                <th className=" font-medium text-gray-900 dark:text-white">
+              <tr className="bg-slate-300 border-b">
+                <th className=" font-medium text-gray-900">
                   Nombre heures utilisés
                 </th>
-                <td className="text-left font-medium text-gray-900 dark:text-white">
+                <td className="text-left font-medium text-gray-900">
                   {chantier.usedHours.toFixed(2)}
                 </td>
               </tr>
-              <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                <th className=" font-medium text-gray-900 dark:text-white">
+              <tr className="bg-slate-300 border-b">
+                <th className=" font-medium text-gray-900">
                   Chantier Terminé
                 </th>
-                <td className="text-left font-medium text-gray-900 dark:text-white">
+                <td className="text-left font-medium text-gray-900">
                   { chantier.isFinished ? "oui" : "non"}
                 </td>
               </tr>
             </tbody>
           </table>
 
-          <table className="mt-3 w-full border-collapse border border-slate-400 text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-white uppercase bg-teal-800 dark:bg-gray-700 p-3 dark:text-gray-400">
+          <table className="mt-3 w-full border-collapse border border-slate-400 text-sm text-left text-gray-500">
+            <thead className="text-xs text-white uppercase bg-teal-800">
                 <tr>
                   <th>
                     Répartitions des heures
@@ -387,11 +387,11 @@ export default function Details({params : {id}}) {
               { tasks.map((task) =>(
                 <>
                 {task.hours != 0 ? 
-                  <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                  <th className="text-center font-medium text-gray-900 dark:text-white">
+                  <tr className="bg-slate-300 border-b">
+                  <th className="text-center font-medium text-gray-900">
                     {task.task}
                   </th>
-                  <td className="text-left font-medium text-gray-900 dark:text-white">
+                  <td className="text-left font-medium text-gray-900">
                     {task.hours}
                   </td>
                 </tr> :
@@ -402,8 +402,8 @@ export default function Details({params : {id}}) {
             </tbody>
           </table>
 
-          <table className="mt-3 w-full border-collapse border border-slate-400 text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-white uppercase bg-teal-800 dark:bg-gray-700 p-3 dark:text-gray-400">
+          <table className="mt-3 w-full border-collapse border border-slate-400 text-sm text-left text-gray-500">
+            <thead className="text-xs text-white uppercase bg-teal-800">
                 <tr>
                   <th>
                     ouvriers ayant participé
@@ -415,11 +415,11 @@ export default function Details({params : {id}}) {
             </thead>
             <tbody>
               { workers.map((worker) =>(
-                <tr className="bg-slate-300 border-b dark:bg-gray-400 dark:border-gray-700">
-                  <th className="text-center font-medium text-gray-900 dark:text-white">
+                <tr className="bg-slate-300 border-b">
+                  <th className="text-center font-medium text-gray-900">
                     { worker.name }
                   </th>
-                  <td className="text-left font-medium text-gray-900 dark:text-white">
+                  <td className="text-left font-medium text-gray-900">
                   { worker.workedHours }
                   </td>
                 </tr>
@@ -435,18 +435,18 @@ export default function Details({params : {id}}) {
               </div>
             ))}
             
-            <textarea id="message" rows="4" className="mt-3 placeholder-teal-800 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-teal-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
+            <textarea id="message" rows="4" className="mt-3 placeholder-teal-800 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-teal-500"
             placeholder="votre note..."
             value={newNote} onChange={(e) => setNewNote(e.target.value)} 
             ></textarea>
-            <button type="button" onClick={() => addNote()} className="float-right p-2 text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-blue-800"
+            <button type="button" onClick={() => addNote()} className="float-right p-2 text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm mr-2 mb-2"
               >ajouter une note
             </button>
           <br/>
           <br/>
           <br/>
           <div className="w-full flex flex-col items-center mt-5">          
-            <button onClick={downloadExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-900'>
+            <button onClick={downloadExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2'>
               exporter excel
             </button>
           </div>

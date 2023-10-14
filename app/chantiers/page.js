@@ -70,7 +70,7 @@ export default function Chantiers() {
       <NavBar/>
       <h1 className='text-4xl p-4 text-center mb-3'>Baustellen</h1>
 
-      <Link href="addChantier" type="button" className="rounded inline-flex items-center text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm p-2 mr-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800">
+      <Link href="addChantier" type="button" className="rounded inline-flex items-center text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 rounded-lg text-sm p-2 mr-2 mb-2">
         <AiOutlinePlus className="mr-2"/><div>Nouveau Chantier</div>
       </Link>
 

@@ -662,8 +662,8 @@ export default function MyInformation() {
           { tableData[selectedMonth] == undefined ? 
           <div>loading</div>
           :
-            <table className="w-full border-collapse border border-slate-400 text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-white uppercase bg-teal-800 dark:bg-gray-700 p-3 dark:text-gray-400">
+            <table className="w-full border-collapse border border-slate-400 text-sm text-left text-gray-500">
+                <thead className="text-xs text-white uppercase bg-teal-800 p-3">
                     <tr>
                       <th>
                         Date
@@ -681,8 +681,8 @@ export default function MyInformation() {
                 <>
                 { isWeekend(firstDayDay,index) ? 
                   <>
-                    <tr key={index} className="bg-slate-500 border-b dark:bg-gray-800 dark:border-gray-700">
-                      <th className="font-medium text-gray-900 dark:text-white">
+                    <tr key={index} className="bg-slate-500 border-b">
+                      <th className="font-medium text-gray-900">
                         <a className='underline' onClick={() =>redirectToHoursLog(index+1)}>
                         {index+1}
                         </a>
@@ -697,8 +697,8 @@ export default function MyInformation() {
                   </>
                 : 
                   <>
-                    <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                    <th className="font-medium text-gray-900 dark:text-white">
+                    <tr key={index} className="bg-white border-b">
+                    <th className="font-medium text-gray-900">
                       <a className='underline' onClick={() =>redirectToHoursLog(index+1)}>
                         {index+1}
                       </a>
@@ -720,10 +720,10 @@ export default function MyInformation() {
         }
         <div className='w-full p-2 border-2 border-teal-800 mb-3'>Total Heure :  {monthHours} </div>
         <div className='grid grid-cols-2 gap-4'>
-          <button onClick={telechargerMoisExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-900'>
+          <button onClick={telechargerMoisExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2'>
             exporter ce mois en excel
           </button>
-          <button onClick={telechargerAnneeExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-900'>
+          <button onClick={telechargerAnneeExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2'>
             exporter cette année en excel
           </button>
         </div>

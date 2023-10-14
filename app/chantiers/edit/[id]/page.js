@@ -116,46 +116,46 @@ export default function EditChantier({params : {id}}) {
                 <h1 className='text-4xl mb-4 p-4 text-center'>Modifier { chantier.name}</h1>
                 <form  onSubmit={handleFormSubmit} method="POST">
                     <div className="mb-6">
-                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
-                        <input value={formData.name} onChange={handleInputChange} type="text" name="name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="" required/>
+                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">Name</label>
+                        <input value={formData.name} onChange={handleInputChange} type="text" name="name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="" required/>
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Adresse</label>
-                        <input value={formData.address} onChange={handleInputChange} type="text" name="address" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="" required/>
+                        <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900">Adresse</label>
+                        <input value={formData.address} onChange={handleInputChange} type="text" name="address" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="" required/>
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="type" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Quoi</label>
-                        <input value={formData.type} onChange={handleInputChange} type="text" name="type" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="" required/>
+                        <label htmlFor="type" className="block mb-2 text-sm font-medium text-gray-900">Quoi</label>
+                        <input value={formData.type} onChange={handleInputChange} type="text" name="type" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="" required/>
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="budget" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">budget</label>
-                        <input value={formData.budget} onChange={handleInputChange} type="number" name="budget" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        <label htmlFor="budget" className="block mb-2 text-sm font-medium text-gray-900">budget</label>
+                        <input value={formData.budget} onChange={handleInputChange} type="number" name="budget" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="materiel" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Prix matériel</label>
-                        <input value={formData.materiel} onChange={handleInputChange} type="number" name="materiel" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        <label htmlFor="materiel" className="block mb-2 text-sm font-medium text-gray-900">Prix matériel</label>
+                        <input value={formData.materiel} onChange={handleInputChange} type="number" name="materiel" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="totalHours" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">nombre heures total</label>
-                        <input value={formData.totalHours} onChange={handleInputChange} type="number" name="totalHours" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        <label htmlFor="totalHours" className="block mb-2 text-sm font-medium text-gray-900">nombre heures total</label>
+                        <input value={formData.totalHours} onChange={handleInputChange} type="number" name="totalHours" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="availableHours" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">nombre heures dispo</label>
-                        <input value={formData.availableHours} onChange={handleInputChange} type="number" name="availableHours" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        <label htmlFor="availableHours" className="block mb-2 text-sm font-medium text-gray-900">nombre heures dispo</label>
+                        <input value={formData.availableHours} onChange={handleInputChange} type="number" name="availableHours" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="usedHours" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">nombre heures utilisés</label>
-                        <input value={formData.usedHours} onChange={handleInputChange} type="number" name="usedHours" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        <label htmlFor="usedHours" className="block mb-2 text-sm font-medium text-gray-900">nombre heures utilisés</label>
+                        <input value={formData.usedHours} onChange={handleInputChange} type="number" name="usedHours" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="usedHours" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">chantier terminé</label>
-                        <select id="countries" value={formData.isFinished} name="isFinished" onChange={handleInputChange} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <label htmlFor="usedHours" className="block mb-2 text-sm font-medium text-gray-900">chantier terminé</label>
+                        <select id="countries" value={formData.isFinished} name="isFinished" onChange={handleInputChange} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                             <option value={false}>non</option>
                             <option value={true}>oui</option>
                         </select>
                     </div>
-                    <button type="submit" className="mb-4 text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-teal-600 dark:hover:bg-teal-700 dark:focus:ring-teal-800">Modifier</button>
-                    <button type="button" onClick={() => router.back()} className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-red-800">Annuler</button>
+                    <button type="submit" className="mb-4 text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Modifier</button>
+                    <button type="button" onClick={() => router.back()} className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Annuler</button>
                 </form>
                 </div>
             }

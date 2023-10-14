@@ -555,7 +555,7 @@ export default function logHours({params : {ptimestamp}}){
                           <a className='float-right' onClick={() => removechantier(index)}>
                             <FaTrashAlt size="1.5em" color="red" className="mb-3 mr-3"/>
                           </a>
-                          <select id={"chantierId" + index} defaultValue={loggedChantier.chantier} value={chantiers.isFinished} name="overflow-auto chantierId" onChange={(e) => handleChantierChange(index, e)} className="font-bold bg-slate-50 border border-slate-500 text-gray-900 text-sm rounded-lg focus:ring-teal-800 focus:border-teal-800 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-800 dark:focus:border-teal-800">
+                          <select id={"chantierId" + index} defaultValue={loggedChantier.chantier} value={chantiers.isFinished} name="overflow-auto chantierId" onChange={(e) => handleChantierChange(index, e)} className="font-bold bg-slate-50 border border-slate-500 text-gray-900 text-sm rounded-lg focus:ring-teal-800 focus:border-teal-800 block w-full p-2.5">
                               { chantiers.map((chantier) => (
                                   <option key={loggedChantier.chantier + chantier.id + index + date} value={chantier.id} >{chantier.name}</option>
                               ))}
@@ -566,7 +566,7 @@ export default function logHours({params : {ptimestamp}}){
                                 <input key={"atelier" + index + loggedChantier.chantier + date} placeholder="heures"
                                 defaultValue={loggedChantier.taskHours[0].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, 0)} 
-                                type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
+                                type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5" required/>
                               </div>
                           </div>
                           <div className='grid grid-cols-2 border-solid border border-slate-700 rounded-lg mt-2 mb-2'>
@@ -575,7 +575,7 @@ export default function logHours({params : {ptimestamp}}){
                                 <input key={"chantier" + index + loggedChantier.chantier + date} placeholder="heures" 
                                 defaultValue={loggedChantier.taskHours[1].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, 1)} 
-                                type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
+                                type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5" required/>
                               </div>
                           </div>
                           <div className='grid grid-cols-2 border-solid border border-slate-700 rounded-lg mt-2 mb-2'>
@@ -584,7 +584,7 @@ export default function logHours({params : {ptimestamp}}){
                                 <input key={"regie" + index + loggedChantier.chantier + date} placeholder="heures" 
                                 defaultValue={loggedChantier.taskHours[2].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, 2)} 
-                                type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
+                                type="number" name="numberOfHours" className="rounded-md bg-gray-50 border-0 text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5" required/>
                               </div>
                           </div>
                           {loggedChantier.taskHours.length > 3 ? loggedChantier.taskHours.map((task,taskIndex) =>(
@@ -596,17 +596,17 @@ export default function logHours({params : {ptimestamp}}){
                                 type='text' placeholder='new task'
                                 defaultValue={loggedChantier.taskHours[taskIndex].task}
                                 id={taskIndex + index} name="chantierId" onChange={(e) => handleTaskChange(e,index,taskIndex)}
-                                className="rounded-l-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required>
+                                className="rounded-l-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5" required>
                                 </input>
                               </div>
                               <div className="">
                                 <input placeholder="heures" 
                                 defaultValue={loggedChantier.taskHours[taskIndex].hours}
                                 onChange={(e) => handleNumberHoursChange(e, index, taskIndex)} 
-                                type="number" name="numberOfHours" className="rounded-r-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500" required/>
+                                type="number" name="numberOfHours" className="rounded-r-lg border border-slate-700 bg-gray-50 border text-gray-900 text-sm focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5" required/>
                               </div>
                               <a onClick={() => removeTask(index,taskIndex,loggedChantier)}
-                                type="button" className="flex items-center justify-center h-full focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                type="button" className="flex items-center justify-center h-full focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2">
                                 <FaTrashAlt size="1.2em" color="white"/>
                                 </a>
                             </div>
@@ -614,7 +614,7 @@ export default function logHours({params : {ptimestamp}}){
                            </div>
                           )) : <></>
                           } 
-                          <button type='button' className="text-sm flex items-center justify-center font-bold text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-1/2 sm:w-auto px-5 py-2.5 text-center dark:bg-teal-600 dark:hover:bg-teal-700 dark:focus:ring-teal-800"
+                          <button type='button' className="text-sm flex items-center justify-center font-bold text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-1/2 sm:w-auto px-5 py-2.5 text-center"
                           onClick={() => addOtherTask(index)}
                           ><AiOutlinePlusCircle  size="1.5em" className="mr-3" /> Task</button>
                         </div>
@@ -622,13 +622,13 @@ export default function logHours({params : {ptimestamp}}){
                       </div>
                     ))
                   }
-                <button type='button' className="text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-teal-600 dark:hover:bg-teal-700 dark:focus:ring-teal-800" onClick={addOtherChantier}>ajouter un chantier</button>
-                <label htmlFor="message" className="block mt-3 mb-0 text-sm font-medium text-gray-900 dark:text-white">ajouter un message</label>
-                <textarea id="message" onChange={(e) => setMessage(e.target.value)} rows="4" className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder=""></textarea>
+                <button type='button' className="text-white bg-teal-800 hover:bg-teal-800 focus:ring-4 focus:outline-none focus:ring-teal-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center" onClick={addOtherChantier}>ajouter un chantier</button>
+                <label htmlFor="message" className="block mt-3 mb-0 text-sm font-medium text-gray-900">ajouter un message</label>
+                <textarea id="message" onChange={(e) => setMessage(e.target.value)} rows="4" className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder=""></textarea>
                 <br/><br/>
-                <button type="button" onClick={() => storeHours(loggedChantiers)} className="text-white bg-green-700 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-gree-700 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-green-700 dark:hover:bg-green-700 dark:focus:ring-green-800">Enregistrer mes heures</button>
+                <button type="button" onClick={() => storeHours(loggedChantiers)} className="text-white bg-green-700 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-gree-700 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Enregistrer mes heures</button>
                 <br/><br/>
-                <button type="button" onClick={() => router.back()} className="text-white bg-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-600 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-600 dark:focus:ring-red-800">Annuler</button>
+                <button type="button" onClick={() => router.back()} className="text-white bg-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-600 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Annuler</button>
               </div>
             </div>
         </>
