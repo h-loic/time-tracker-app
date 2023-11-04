@@ -98,6 +98,7 @@ export default function MyInformation() {
         });
 
         tableData[firstDay.getTime()] = tableau;
+        console.log(tableau)
         setTableData(tableData)
         setSelectedMonth(firstDay.getTime());
         setMonthHours(totalMonthHours);
@@ -308,7 +309,7 @@ export default function MyInformation() {
           fgColor: { argb: 'B2BABB' }, 
         };
       }else if (isFriday(firstDayDay, parseInt(index)-1)){
-        totalClassicHours+=6;
+        totalClassicHours+=5.5;
       }else{
         totalClassicHours+=9;
       }
@@ -490,7 +491,7 @@ export default function MyInformation() {
             fgColor: { argb: 'B2BABB' }, // Couleur de fond (ici, rose)
           };
         }else if (isFriday(tempFirstDay,  i+1)){
-          totalClassicHoursTab[letterIndex]+=6;
+          totalClassicHoursTab[letterIndex]+=5.5;
         }else{
           totalClassicHoursTab[letterIndex]+=9;
         }
@@ -626,6 +627,32 @@ export default function MyInformation() {
     });
   }
 
+  const telechargerDetails = () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet 1');
+
+    // Ajoutez des données à la feuille de calcul
+    worksheet.addRow([1, 'John Doe', 'johndoe@example.com']);
+    worksheet.addRow([2, 'Jane Smith', 'janesmith@example.com']);
+
+    // Accédez à la cellule à laquelle vous souhaitez ajouter des bordures
+    const cellWithBorders = worksheet.getCell('A1');
+
+    // Ajoutez des bordures à la cellule (haut, bas, gauche, droite)
+    cellWithBorders.style.border = {
+      top: { style: 'thin' },
+      bottom: { style: 'thin' },
+      left: { style: 'thin' },
+      right: { style: 'thin' },
+    };
+
+    // Générez le fichier Excel en mémoire
+    workbook.xlsx.writeBuffer().then((data) => {
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, 'example.xlsx');
+    });
+  }
+
   const redirectToHoursLog = (index) => {
     console.log(index)
     let dayDate = new Date(date.getFullYear(),date.getMonth(),index)
@@ -719,7 +746,7 @@ export default function MyInformation() {
           </table>
         }
         <div className='w-full p-2 border-2 border-teal-800 mb-3'>Total Heure :  {monthHours} </div>
-        <div className='grid grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 gap-4 '>
           <button onClick={telechargerMoisExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2'>
             exporter ce mois en excel
           </button>

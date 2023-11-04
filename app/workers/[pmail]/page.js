@@ -310,7 +310,7 @@ export default function Information({params : {pmail}}) {
           fgColor: { argb: 'B2BABB' }, 
         };
       }else if (isFriday(firstDayDay, parseInt(index)-1)){
-        totalClassicHours+=6;
+        totalClassicHours+=5.5;
       }else{
         totalClassicHours+=9;
       }
@@ -492,7 +492,7 @@ export default function Information({params : {pmail}}) {
             fgColor: { argb: 'B2BABB' }, // Couleur de fond (ici, rose)
           };
         }else if (isFriday(tempFirstDay,  i+1)){
-          totalClassicHoursTab[letterIndex]+=6;
+          totalClassicHoursTab[letterIndex]+=5.5;
         }else{
           totalClassicHoursTab[letterIndex]+=9;
         }
