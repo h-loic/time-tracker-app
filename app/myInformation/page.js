@@ -22,6 +22,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AiOutlineLeft,AiOutlineRight } from 'react-icons/ai';
 import ExcelJS from 'exceljs';
 import { useRouter } from 'next/navigation'
+import { HonestWeekPicker } from "../../components/honestWeekPicker";
 
 export default function MyInformation() {
 
@@ -98,7 +99,6 @@ export default function MyInformation() {
         });
 
         tableData[firstDay.getTime()] = tableau;
-        console.log(tableau)
         setTableData(tableData)
         setSelectedMonth(firstDay.getTime());
         setMonthHours(totalMonthHours);
@@ -654,12 +654,132 @@ export default function MyInformation() {
   }
 
   const redirectToHoursLog = (index) => {
-    console.log(index)
     let dayDate = new Date(date.getFullYear(),date.getMonth(),index)
-    console.log(tableData[selectedMonth])
     router.push("logHours/" + dayDate.getTime());
   }
 
+
+  // RECAP WEEK
+  //
+  //
+
+  const [weekInfo,setWeekInfo] = useState([])
+
+  const [week, setWeek] = useState({ firstDay: "02-02-2022" });
+
+  const convertDate = (date) => {
+    let dt = new Date(date);
+
+    return `${dt.getDate()}/${dt.getMonth() + 1}/${dt.getFullYear()}`;
+  };
+
+  const joursSemaine = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const [chantiersName, setChantiersName] = useState({});
+
+  const onChange = (week) => {
+    setWeek(week);
+    setWeekInfo([])
+    let firstDayOfTheWeek = week.firstDay;
+    let DayOfTheWeekTimestamp = firstDayOfTheWeek.getTime();
+    for(let i = 0; i < 5; i++){
+      const docRef = doc(db, `workers/${worker.id}/workedDay/${DayOfTheWeekTimestamp}`);
+      const fetchData = async () => {
+        const docSnap = await getDoc(docRef);
+        const a = docSnap.data();
+        if (a != undefined){
+          a.loggedChantiers.forEach(chantier => {
+            const docRef2 = doc(db, `chantiers/${chantier.chantier}`)
+            const fetchChantiers = async () => {
+              const docSnap2 = await getDoc(docRef2);
+              const nameChantier = docSnap2.data();
+              chantiersName[chantier.chantier] = nameChantier.name;
+              let id = chantier.chantier
+              setChantiersName(prevDonnees => ({
+                ...prevDonnees,
+                id : nameChantier.name
+              }));
+            }
+            fetchChantiers();
+          });
+          let weekInfoDate = new Date(a.timestamp);
+          let jourSemaine = joursSemaine[weekInfoDate.getDay()];
+          let jour = weekInfoDate.getDate();
+          let moisActuel = weekInfoDate.getMonth();
+          let dateFormatee = `${jourSemaine} ${jour}/${moisActuel}`;
+          a.jour = dateFormatee;
+          setWeekInfo(prevWeekInfo => [...prevWeekInfo, a]);
+        }
+      }
+      DayOfTheWeekTimestamp = DayOfTheWeekTimestamp + 24 * 60 * 60 * 1000;
+      fetchData()
+    }
+    console.log(weekInfo)
+  };
+
+  const telechargerWeek = () => {
+    let workbook = new ExcelJS.Workbook();
+    let worksheet = workbook.addWorksheet('Feuille 1');
+
+
+    worksheet.getCell("A5").value = "Date";
+    worksheet.getCell('A5').font = {bold : true};
+    worksheet.getCell("B5").value = "Was";
+    worksheet.getCell('B5').font = {bold : true};
+    worksheet.getCell("C5").value = "Heures";
+    worksheet.getCell('C5').font = {bold : true};
+    worksheet.getCell('A5').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('B5').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+    worksheet.getCell('C5').style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+
+    const lettreLigne = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
+    let i = 6;
+
+    weekInfo.forEach(workedDay => {
+      worksheet.getCell("A" + i).value = workedDay.jour;
+      worksheet.getCell("B" + i).value = "";
+      worksheet.getCell("C" + i).value = "";
+      worksheet.getCell("A" + i).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+      worksheet.getCell("B" + i).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+      worksheet.getCell("C" + i).style.border = {top: { style: 'thin' },bottom: { style: 'thin' },left: { style: 'thin' },right: { style: 'thin' },};
+      workedDay.loggedChantiers.forEach(lc => {
+        if (chantiersName[lc.chantier] != undefined && chantiersName[lc.chantier] != null){
+          worksheet.getCell("B" + i).value += chantiersName[lc.chantier] + "\n";
+        }
+        worksheet.getCell("C" + i).value += parseFloat(lc.taskHours.reduce((total, element) => total + (element.hours ? parseFloat(element.hours.replace(',', '.')) : 0), 0)).toString() + "\n";
+      });
+      i++;
+    });
+  
+    worksheet.columns[0].width = 20;
+    worksheet.columns[1].width = 40;
+    worksheet.columns[2].width = 20;
+    // Créez un objet Blob à partir du contenu Excel
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      let blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  
+      // Créez un lien d'ancrage pour le téléchargement du fichier
+      let a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      let name = 'semaineDu' + convertDate(week.firstDay) +'.xlsx';
+      a.download = name;
+      a.style.display = 'none'; // Cachez le lien
+  
+      // Ajoutez le lien d'ancrage au DOM
+      document.body.appendChild(a);
+  
+      // Simulez un clic sur le lien pour déclencher le téléchargement
+      a.click();
+  
+      // Libérez l'URL et supprimez l'élément ancre après le téléchargement
+      window.URL.revokeObjectURL(a.href);
+      document.body.removeChild(a);
+    });
+  }
+
+  //
+  //
+  // RECAP WEEK
   return (
     <>
       <NavBar/>
@@ -752,6 +872,54 @@ export default function MyInformation() {
           </button>
           <button onClick={telechargerAnneeExcel} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2'>
             exporter cette année en excel
+          </button>
+        </div>
+        <div className='mt-5 text-center content-center'>
+          <h1 className='text-lg'>Exporter une semaine de travaille</h1>
+          <br/>
+          <div className='flex items-center justify-center'>
+            <div className=''>
+              <HonestWeekPicker onChange={onChange} />
+            </div>
+          </div>
+        </div>
+        <div>
+          { weekInfo.length == 0 ? 
+            <div>pas d'information pour cette semaine</div>
+            :
+            <div>
+              <table className="border-collapse border border-slate-950 w-full mt-5">
+                <tr>
+                  <th className="px-1.5 border border-slate-950">Date</th>
+                  <th className="px-1.5 border border-slate-950">Was</th> 
+                  <th className="px-1.5 border border-slate-950">Heures</th>
+                </tr>
+              {weekInfo.map((workedDay, index) => (
+                <tr>
+                  <td className="px-1.5 border border-slate-950"><p key={index}>{workedDay.jour}</p></td>
+                  <td className="px-1.5 border border-slate-950">
+                    {workedDay.loggedChantiers.map((loggedChantier) => (
+                      <div>{chantiersName[loggedChantier.chantier]}</div>
+                    ))}
+                  </td>
+                  <td className="px-1.5 border border-slate-950">
+                  <td className="">
+                      {workedDay.loggedChantiers.map((c, index) => (
+                        <div key={index}>
+                          {parseFloat(c.taskHours.reduce((total, element) => total + (element.hours ? parseFloat(element.hours.replace(',', '.')) : 0), 0))}
+                        </div>
+                      ))}
+                  </td>
+                  </td>
+                </tr>
+              ))}
+              </table>
+            </div>
+          }
+        </div>
+        <div className='grid grid-cols-1 gap-4 mt-5'>
+          <button onClick={telechargerWeek} className='focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2'>
+            exporter la semaine du {convertDate(week.firstDay)}
           </button>
         </div>
     </>
