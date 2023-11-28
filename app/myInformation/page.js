@@ -745,12 +745,15 @@ export default function MyInformation() {
       workedDay.loggedChantiers.forEach(lc => {
         if (chantiersName[lc.chantier] != undefined && chantiersName[lc.chantier] != null){
           worksheet.getCell("B" + i).value += chantiersName[lc.chantier] + "\n";
+          worksheet.getCell("B" + i).alignment = { wrapText: true };
         }
         worksheet.getCell("C" + i).value += parseFloat(lc.taskHours.reduce((total, element) => total + (element.hours ? parseFloat(element.hours.replace(',', '.')) : 0), 0)).toString() + "\n";
+        worksheet.getCell("C" + i).alignment = { wrapText: true };
       });
       i++;
     });
   
+    worksheet.alignment = { wrapText: true };
     worksheet.columns[0].width = 20;
     worksheet.columns[1].width = 40;
     worksheet.columns[2].width = 20;
