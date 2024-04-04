@@ -704,7 +704,7 @@ export default function MyInformation() {
           let weekInfoDate = new Date(a.timestamp);
           let jourSemaine = joursSemaine[weekInfoDate.getDay()];
           let jour = weekInfoDate.getDate();
-          let moisActuel = weekInfoDate.getMonth();
+          let moisActuel = weekInfoDate.getMonth()+1;
           let dateFormatee = `${jourSemaine} ${jour}/${moisActuel}`;
           a.jour = dateFormatee;
           setWeekInfo(prevWeekInfo => [...prevWeekInfo, a]);
@@ -736,6 +736,7 @@ export default function MyInformation() {
     let i = 6;
 
     weekInfo.forEach(workedDay => {
+      console.log(workedDay)
       worksheet.getCell("A" + i).value = workedDay.jour;
       worksheet.getCell("B" + i).value = "";
       worksheet.getCell("C" + i).value = "";
